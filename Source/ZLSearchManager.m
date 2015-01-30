@@ -13,9 +13,6 @@
 #import "ZLInternalWorkItem.h"
 #import "ZLSearchResult.h"
 
-#warning fix
-//#import "ADNetworkManager.h"
-
 NSString *const kZLSearchIndexInfoDirectoryName = @"ZLSearchIndexInfo";
 
 NSString *const kTaskTypeSearch = @"com.agilemd.tasktype.search";
@@ -176,8 +173,7 @@ static dispatch_once_t onceToken;
 - (BOOL)resetSearchDatabase
 {
     [[ZLTaskManager sharedInstance] stopAndWaitWithNetworkCancellationBlock:^{
-#warning fix
-       // [[ADNetworkManager sharedInstance] cancelAllTasks];
+
     }];
     [[ZLTaskManager sharedInstance] removeTasksOfType:kTaskTypeSearch];
     

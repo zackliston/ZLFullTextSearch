@@ -1,0 +1,667 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		13754B2B1A7B32D00072E213 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13754B2A1A7B32D00072E213 /* main.m */; };
+		13754B2E1A7B32D00072E213 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13754B2D1A7B32D00072E213 /* AppDelegate.m */; };
+		13754B311A7B32D00072E213 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 13754B301A7B32D00072E213 /* ViewController.m */; };
+		13754B341A7B32D00072E213 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 13754B321A7B32D00072E213 /* Main.storyboard */; };
+		13754B361A7B32D00072E213 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13754B351A7B32D00072E213 /* Images.xcassets */; };
+		13754B391A7B32D00072E213 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13754B371A7B32D00072E213 /* LaunchScreen.xib */; };
+		138DBB3B1A7B37490048906D /* ZLSearchManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB3A1A7B37490048906D /* ZLSearchManager.m */; };
+		138DBB3C1A7B37490048906D /* ZLSearchManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB3A1A7B37490048906D /* ZLSearchManager.m */; };
+		138DBB411A7B377A0048906D /* ZLSearchTaskWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB401A7B377A0048906D /* ZLSearchTaskWorker.m */; };
+		138DBB421A7B377A0048906D /* ZLSearchTaskWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB401A7B377A0048906D /* ZLSearchTaskWorker.m */; };
+		138DBB461A7B37E00048906D /* ZLSearchDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB451A7B37E00048906D /* ZLSearchDatabase.m */; };
+		138DBB471A7B37E00048906D /* ZLSearchDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB451A7B37E00048906D /* ZLSearchDatabase.m */; };
+		138DBB4B1A7B38190048906D /* ZLSearchRank.c in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB491A7B38190048906D /* ZLSearchRank.c */; };
+		138DBB4C1A7B38190048906D /* ZLSearchRank.c in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB491A7B38190048906D /* ZLSearchRank.c */; };
+		138DBB501A7B38400048906D /* ZLSearchDatabaseConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB4F1A7B38400048906D /* ZLSearchDatabaseConstants.m */; };
+		138DBB511A7B38400048906D /* ZLSearchDatabaseConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB4F1A7B38400048906D /* ZLSearchDatabaseConstants.m */; };
+		138DBB551A7B38760048906D /* ZLSearchResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB541A7B38760048906D /* ZLSearchResult.m */; };
+		138DBB561A7B38760048906D /* ZLSearchResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB541A7B38760048906D /* ZLSearchResult.m */; };
+		138DBB601A7B40930048906D /* ADTestSearchManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB5C1A7B40930048906D /* ADTestSearchManager.m */; };
+		138DBB611A7B40930048906D /* ADTestSearchTaskWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB5D1A7B40930048906D /* ADTestSearchTaskWorker.m */; };
+		138DBB621A7B40930048906D /* ADTestSearchDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB5E1A7B40930048906D /* ADTestSearchDatabase.m */; };
+		138DBB631A7B40930048906D /* ADTestSearchRank.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB5F1A7B40930048906D /* ADTestSearchRank.m */; };
+		138DBB651A7B44EA0048906D /* ZLFullTextSearch.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 138DBB641A7B44EA0048906D /* ZLFullTextSearch.podspec */; };
+		58DE1093455F3458D4AC5CD9 /* libPods-ZLFullTextSearch.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA0C3A3E3E51892EF5486247 /* libPods-ZLFullTextSearch.a */; };
+		79438252A98FFEEC7619760D /* libPods-ZLFullTextSearchTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD9FDC07A21F23044AC7DF60 /* libPods-ZLFullTextSearchTests.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		13754B3F1A7B32D00072E213 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 13754B1D1A7B32D00072E213 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 13754B241A7B32D00072E213;
+			remoteInfo = ZLFullTextSearch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		13754B251A7B32D00072E213 /* ZLFullTextSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZLFullTextSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13754B291A7B32D00072E213 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		13754B2A1A7B32D00072E213 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		13754B2C1A7B32D00072E213 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		13754B2D1A7B32D00072E213 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		13754B2F1A7B32D00072E213 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		13754B301A7B32D00072E213 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		13754B331A7B32D00072E213 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		13754B351A7B32D00072E213 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		13754B381A7B32D00072E213 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		13754B3E1A7B32D00072E213 /* ZLFullTextSearchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZLFullTextSearchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		13754B431A7B32D00072E213 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		138DBB391A7B37490048906D /* ZLSearchManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZLSearchManager.h; path = Source/ZLSearchManager.h; sourceTree = SOURCE_ROOT; };
+		138DBB3A1A7B37490048906D /* ZLSearchManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ZLSearchManager.m; path = Source/ZLSearchManager.m; sourceTree = SOURCE_ROOT; };
+		138DBB3F1A7B377A0048906D /* ZLSearchTaskWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZLSearchTaskWorker.h; path = Source/ZLSearchTaskWorker.h; sourceTree = SOURCE_ROOT; };
+		138DBB401A7B377A0048906D /* ZLSearchTaskWorker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ZLSearchTaskWorker.m; path = Source/ZLSearchTaskWorker.m; sourceTree = SOURCE_ROOT; };
+		138DBB441A7B37E00048906D /* ZLSearchDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZLSearchDatabase.h; path = Source/ZLSearchDatabase.h; sourceTree = SOURCE_ROOT; };
+		138DBB451A7B37E00048906D /* ZLSearchDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ZLSearchDatabase.m; path = Source/ZLSearchDatabase.m; sourceTree = SOURCE_ROOT; };
+		138DBB491A7B38190048906D /* ZLSearchRank.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ZLSearchRank.c; path = Source/ZLSearchRank.c; sourceTree = SOURCE_ROOT; };
+		138DBB4A1A7B38190048906D /* ZLSearchRank.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZLSearchRank.h; path = Source/ZLSearchRank.h; sourceTree = SOURCE_ROOT; };
+		138DBB4E1A7B38400048906D /* ZLSearchDatabaseConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZLSearchDatabaseConstants.h; path = Source/ZLSearchDatabaseConstants.h; sourceTree = SOURCE_ROOT; };
+		138DBB4F1A7B38400048906D /* ZLSearchDatabaseConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ZLSearchDatabaseConstants.m; path = Source/ZLSearchDatabaseConstants.m; sourceTree = SOURCE_ROOT; };
+		138DBB531A7B38760048906D /* ZLSearchResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZLSearchResult.h; path = Source/ZLSearchResult.h; sourceTree = SOURCE_ROOT; };
+		138DBB541A7B38760048906D /* ZLSearchResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ZLSearchResult.m; path = Source/ZLSearchResult.m; sourceTree = SOURCE_ROOT; };
+		138DBB591A7B390B0048906D /* ZLSearchResultIsFavoritedProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ZLSearchResultIsFavoritedProtocol.h; path = Source/ZLSearchResultIsFavoritedProtocol.h; sourceTree = SOURCE_ROOT; };
+		138DBB5A1A7B3A8C0048906D /* ZLSearchBackupProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ZLSearchBackupProtocol.h; path = Source/ZLSearchBackupProtocol.h; sourceTree = SOURCE_ROOT; };
+		138DBB5B1A7B3AC60048906D /* ZLSearchTaskWorkerProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ZLSearchTaskWorkerProtocol.h; path = Source/ZLSearchTaskWorkerProtocol.h; sourceTree = SOURCE_ROOT; };
+		138DBB5C1A7B40930048906D /* ADTestSearchManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ADTestSearchManager.m; sourceTree = "<group>"; };
+		138DBB5D1A7B40930048906D /* ADTestSearchTaskWorker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ADTestSearchTaskWorker.m; sourceTree = "<group>"; };
+		138DBB5E1A7B40930048906D /* ADTestSearchDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ADTestSearchDatabase.m; sourceTree = "<group>"; };
+		138DBB5F1A7B40930048906D /* ADTestSearchRank.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ADTestSearchRank.m; sourceTree = "<group>"; };
+		138DBB641A7B44EA0048906D /* ZLFullTextSearch.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ZLFullTextSearch.podspec; sourceTree = "<group>"; };
+		257F36F8CFA81715F82496D3 /* Pods-ZLFullTextSearchTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLFullTextSearchTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ZLFullTextSearchTests/Pods-ZLFullTextSearchTests.debug.xcconfig"; sourceTree = "<group>"; };
+		77FA66BD6EF75AD0330A0CA8 /* Pods-ZLFullTextSearchTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLFullTextSearchTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ZLFullTextSearchTests/Pods-ZLFullTextSearchTests.release.xcconfig"; sourceTree = "<group>"; };
+		AB7B35DE195251D84F06A474 /* Pods-ZLFullTextSearch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLFullTextSearch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ZLFullTextSearch/Pods-ZLFullTextSearch.debug.xcconfig"; sourceTree = "<group>"; };
+		AD9FDC07A21F23044AC7DF60 /* libPods-ZLFullTextSearchTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ZLFullTextSearchTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFA834A2D07C7435D517A3BB /* Pods-ZLFullTextSearch.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLFullTextSearch.release.xcconfig"; path = "Pods/Target Support Files/Pods-ZLFullTextSearch/Pods-ZLFullTextSearch.release.xcconfig"; sourceTree = "<group>"; };
+		FA0C3A3E3E51892EF5486247 /* libPods-ZLFullTextSearch.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ZLFullTextSearch.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		13754B221A7B32D00072E213 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				58DE1093455F3458D4AC5CD9 /* libPods-ZLFullTextSearch.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13754B3B1A7B32D00072E213 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				79438252A98FFEEC7619760D /* libPods-ZLFullTextSearchTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		13754B1C1A7B32D00072E213 = {
+			isa = PBXGroup;
+			children = (
+				138DBB641A7B44EA0048906D /* ZLFullTextSearch.podspec */,
+				13754B271A7B32D00072E213 /* ZLFullTextSearch */,
+				13754B411A7B32D00072E213 /* ZLFullTextSearchTests */,
+				13754B261A7B32D00072E213 /* Products */,
+				DBB6D521ADEED927B14A05D3 /* Pods */,
+				2E3404F8C55B8D5E6E21BD64 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		13754B261A7B32D00072E213 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				13754B251A7B32D00072E213 /* ZLFullTextSearch.app */,
+				13754B3E1A7B32D00072E213 /* ZLFullTextSearchTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		13754B271A7B32D00072E213 /* ZLFullTextSearch */ = {
+			isa = PBXGroup;
+			children = (
+				13754B4E1A7B34980072E213 /* Source */,
+				13754B2C1A7B32D00072E213 /* AppDelegate.h */,
+				13754B2D1A7B32D00072E213 /* AppDelegate.m */,
+				13754B2F1A7B32D00072E213 /* ViewController.h */,
+				13754B301A7B32D00072E213 /* ViewController.m */,
+				13754B321A7B32D00072E213 /* Main.storyboard */,
+				13754B351A7B32D00072E213 /* Images.xcassets */,
+				13754B371A7B32D00072E213 /* LaunchScreen.xib */,
+				13754B281A7B32D00072E213 /* Supporting Files */,
+			);
+			path = ZLFullTextSearch;
+			sourceTree = "<group>";
+		};
+		13754B281A7B32D00072E213 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				13754B291A7B32D00072E213 /* Info.plist */,
+				13754B2A1A7B32D00072E213 /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		13754B411A7B32D00072E213 /* ZLFullTextSearchTests */ = {
+			isa = PBXGroup;
+			children = (
+				138DBB5C1A7B40930048906D /* ADTestSearchManager.m */,
+				138DBB5D1A7B40930048906D /* ADTestSearchTaskWorker.m */,
+				138DBB5E1A7B40930048906D /* ADTestSearchDatabase.m */,
+				138DBB5F1A7B40930048906D /* ADTestSearchRank.m */,
+				13754B421A7B32D00072E213 /* Supporting Files */,
+			);
+			path = ZLFullTextSearchTests;
+			sourceTree = "<group>";
+		};
+		13754B421A7B32D00072E213 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				13754B431A7B32D00072E213 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		13754B4E1A7B34980072E213 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				138DBB571A7B38B30048906D /* Protocols */,
+				138DBB521A7B385B0048906D /* SearchResult */,
+				138DBB431A7B37B90048906D /* SearchDatabase */,
+				138DBB3D1A7B37560048906D /* SearchManager */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		138DBB3D1A7B37560048906D /* SearchManager */ = {
+			isa = PBXGroup;
+			children = (
+				138DBB3E1A7B37600048906D /* TaskWorkers */,
+				138DBB391A7B37490048906D /* ZLSearchManager.h */,
+				138DBB3A1A7B37490048906D /* ZLSearchManager.m */,
+			);
+			name = SearchManager;
+			sourceTree = "<group>";
+		};
+		138DBB3E1A7B37600048906D /* TaskWorkers */ = {
+			isa = PBXGroup;
+			children = (
+				138DBB3F1A7B377A0048906D /* ZLSearchTaskWorker.h */,
+				138DBB401A7B377A0048906D /* ZLSearchTaskWorker.m */,
+			);
+			name = TaskWorkers;
+			sourceTree = "<group>";
+		};
+		138DBB431A7B37B90048906D /* SearchDatabase */ = {
+			isa = PBXGroup;
+			children = (
+				138DBB4D1A7B38220048906D /* Constants */,
+				138DBB481A7B37E40048906D /* Rank */,
+				138DBB441A7B37E00048906D /* ZLSearchDatabase.h */,
+				138DBB451A7B37E00048906D /* ZLSearchDatabase.m */,
+			);
+			name = SearchDatabase;
+			sourceTree = "<group>";
+		};
+		138DBB481A7B37E40048906D /* Rank */ = {
+			isa = PBXGroup;
+			children = (
+				138DBB491A7B38190048906D /* ZLSearchRank.c */,
+				138DBB4A1A7B38190048906D /* ZLSearchRank.h */,
+			);
+			name = Rank;
+			sourceTree = "<group>";
+		};
+		138DBB4D1A7B38220048906D /* Constants */ = {
+			isa = PBXGroup;
+			children = (
+				138DBB4E1A7B38400048906D /* ZLSearchDatabaseConstants.h */,
+				138DBB4F1A7B38400048906D /* ZLSearchDatabaseConstants.m */,
+			);
+			name = Constants;
+			sourceTree = "<group>";
+		};
+		138DBB521A7B385B0048906D /* SearchResult */ = {
+			isa = PBXGroup;
+			children = (
+				138DBB531A7B38760048906D /* ZLSearchResult.h */,
+				138DBB541A7B38760048906D /* ZLSearchResult.m */,
+			);
+			name = SearchResult;
+			sourceTree = "<group>";
+		};
+		138DBB571A7B38B30048906D /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				138DBB591A7B390B0048906D /* ZLSearchResultIsFavoritedProtocol.h */,
+				138DBB5A1A7B3A8C0048906D /* ZLSearchBackupProtocol.h */,
+				138DBB5B1A7B3AC60048906D /* ZLSearchTaskWorkerProtocol.h */,
+			);
+			name = Protocols;
+			sourceTree = "<group>";
+		};
+		2E3404F8C55B8D5E6E21BD64 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				FA0C3A3E3E51892EF5486247 /* libPods-ZLFullTextSearch.a */,
+				AD9FDC07A21F23044AC7DF60 /* libPods-ZLFullTextSearchTests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DBB6D521ADEED927B14A05D3 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				AB7B35DE195251D84F06A474 /* Pods-ZLFullTextSearch.debug.xcconfig */,
+				AFA834A2D07C7435D517A3BB /* Pods-ZLFullTextSearch.release.xcconfig */,
+				257F36F8CFA81715F82496D3 /* Pods-ZLFullTextSearchTests.debug.xcconfig */,
+				77FA66BD6EF75AD0330A0CA8 /* Pods-ZLFullTextSearchTests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		13754B241A7B32D00072E213 /* ZLFullTextSearch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 13754B481A7B32D00072E213 /* Build configuration list for PBXNativeTarget "ZLFullTextSearch" */;
+			buildPhases = (
+				42851D67DAB2F97F71C49ECD /* Check Pods Manifest.lock */,
+				13754B211A7B32D00072E213 /* Sources */,
+				13754B221A7B32D00072E213 /* Frameworks */,
+				13754B231A7B32D00072E213 /* Resources */,
+				8AB8003F063042D70EA2EE95 /* Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZLFullTextSearch;
+			productName = ZLFullTextSearch;
+			productReference = 13754B251A7B32D00072E213 /* ZLFullTextSearch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		13754B3D1A7B32D00072E213 /* ZLFullTextSearchTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 13754B4B1A7B32D00072E213 /* Build configuration list for PBXNativeTarget "ZLFullTextSearchTests" */;
+			buildPhases = (
+				3616B7181357D7C82EB03BCB /* Check Pods Manifest.lock */,
+				13754B3A1A7B32D00072E213 /* Sources */,
+				13754B3B1A7B32D00072E213 /* Frameworks */,
+				13754B3C1A7B32D00072E213 /* Resources */,
+				F6A1735AC8568B149FF09154 /* Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				13754B401A7B32D00072E213 /* PBXTargetDependency */,
+			);
+			name = ZLFullTextSearchTests;
+			productName = ZLFullTextSearchTests;
+			productReference = 13754B3E1A7B32D00072E213 /* ZLFullTextSearchTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		13754B1D1A7B32D00072E213 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = ZL;
+				LastUpgradeCheck = 0610;
+				ORGANIZATIONNAME = "Zack Liston";
+				TargetAttributes = {
+					13754B241A7B32D00072E213 = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+					13754B3D1A7B32D00072E213 = {
+						CreatedOnToolsVersion = 6.1.1;
+						TestTargetID = 13754B241A7B32D00072E213;
+					};
+				};
+			};
+			buildConfigurationList = 13754B201A7B32D00072E213 /* Build configuration list for PBXProject "ZLFullTextSearch" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 13754B1C1A7B32D00072E213;
+			productRefGroup = 13754B261A7B32D00072E213 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				13754B241A7B32D00072E213 /* ZLFullTextSearch */,
+				13754B3D1A7B32D00072E213 /* ZLFullTextSearchTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		13754B231A7B32D00072E213 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				138DBB651A7B44EA0048906D /* ZLFullTextSearch.podspec in Resources */,
+				13754B341A7B32D00072E213 /* Main.storyboard in Resources */,
+				13754B391A7B32D00072E213 /* LaunchScreen.xib in Resources */,
+				13754B361A7B32D00072E213 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13754B3C1A7B32D00072E213 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3616B7181357D7C82EB03BCB /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		42851D67DAB2F97F71C49ECD /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		8AB8003F063042D70EA2EE95 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ZLFullTextSearch/Pods-ZLFullTextSearch-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F6A1735AC8568B149FF09154 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ZLFullTextSearchTests/Pods-ZLFullTextSearchTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		13754B211A7B32D00072E213 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				138DBB461A7B37E00048906D /* ZLSearchDatabase.m in Sources */,
+				138DBB4B1A7B38190048906D /* ZLSearchRank.c in Sources */,
+				13754B311A7B32D00072E213 /* ViewController.m in Sources */,
+				138DBB551A7B38760048906D /* ZLSearchResult.m in Sources */,
+				13754B2E1A7B32D00072E213 /* AppDelegate.m in Sources */,
+				138DBB501A7B38400048906D /* ZLSearchDatabaseConstants.m in Sources */,
+				13754B2B1A7B32D00072E213 /* main.m in Sources */,
+				138DBB3B1A7B37490048906D /* ZLSearchManager.m in Sources */,
+				138DBB411A7B377A0048906D /* ZLSearchTaskWorker.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13754B3A1A7B32D00072E213 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				138DBB421A7B377A0048906D /* ZLSearchTaskWorker.m in Sources */,
+				138DBB511A7B38400048906D /* ZLSearchDatabaseConstants.m in Sources */,
+				138DBB601A7B40930048906D /* ADTestSearchManager.m in Sources */,
+				138DBB611A7B40930048906D /* ADTestSearchTaskWorker.m in Sources */,
+				138DBB631A7B40930048906D /* ADTestSearchRank.m in Sources */,
+				138DBB471A7B37E00048906D /* ZLSearchDatabase.m in Sources */,
+				138DBB561A7B38760048906D /* ZLSearchResult.m in Sources */,
+				138DBB4C1A7B38190048906D /* ZLSearchRank.c in Sources */,
+				138DBB3C1A7B37490048906D /* ZLSearchManager.m in Sources */,
+				138DBB621A7B40930048906D /* ADTestSearchDatabase.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		13754B401A7B32D00072E213 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 13754B241A7B32D00072E213 /* ZLFullTextSearch */;
+			targetProxy = 13754B3F1A7B32D00072E213 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		13754B321A7B32D00072E213 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				13754B331A7B32D00072E213 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		13754B371A7B32D00072E213 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				13754B381A7B32D00072E213 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		13754B461A7B32D00072E213 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		13754B471A7B32D00072E213 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		13754B491A7B32D00072E213 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AB7B35DE195251D84F06A474 /* Pods-ZLFullTextSearch.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = ZLFullTextSearch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		13754B4A1A7B32D00072E213 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AFA834A2D07C7435D517A3BB /* Pods-ZLFullTextSearch.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = ZLFullTextSearch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		13754B4C1A7B32D00072E213 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 257F36F8CFA81715F82496D3 /* Pods-ZLFullTextSearchTests.debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = ZLFullTextSearchTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZLFullTextSearch.app/ZLFullTextSearch";
+			};
+			name = Debug;
+		};
+		13754B4D1A7B32D00072E213 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 77FA66BD6EF75AD0330A0CA8 /* Pods-ZLFullTextSearchTests.release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = ZLFullTextSearchTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZLFullTextSearch.app/ZLFullTextSearch";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		13754B201A7B32D00072E213 /* Build configuration list for PBXProject "ZLFullTextSearch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				13754B461A7B32D00072E213 /* Debug */,
+				13754B471A7B32D00072E213 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		13754B481A7B32D00072E213 /* Build configuration list for PBXNativeTarget "ZLFullTextSearch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				13754B491A7B32D00072E213 /* Debug */,
+				13754B4A1A7B32D00072E213 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		13754B4B1A7B32D00072E213 /* Build configuration list for PBXNativeTarget "ZLFullTextSearchTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				13754B4C1A7B32D00072E213 /* Debug */,
+				13754B4D1A7B32D00072E213 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 13754B1D1A7B32D00072E213 /* Project object */;
+}

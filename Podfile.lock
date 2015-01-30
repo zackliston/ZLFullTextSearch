@@ -1,0 +1,26 @@
+PODS:
+  - FMDB (2.4):
+    - FMDB/standard (= 2.4)
+  - FMDB/common (2.4)
+  - FMDB/FTS (2.4):
+    - FMDB/standard
+  - FMDB/standard (2.4):
+    - FMDB/common
+  - OCMock (3.1.2)
+  - Reachability (3.2)
+  - ZLTaskManager (0.1.0):
+    - FMDB (= 2.4)
+    - Reachability (= 3.2)
+
+DEPENDENCIES:
+  - FMDB/FTS (~> 2.4)
+  - OCMock (~> 3.1)
+  - ZLTaskManager (~> 0.1)
+
+SPEC CHECKSUMS:
+  FMDB: 0b2fa25e5264ef177973c0cb8c02c711107979aa
+  OCMock: ecdd510b73ef397f2f97274785c1e87fd147c49f
+  Reachability: 1ef8adf5c4e3d362f96515d4278f68dad3c26930
+  ZLTaskManager: b71b4f2db64d50acfd4a5a5d01f7e47fb5897d1c
+
+COCOAPODS: 0.35.0

@@ -10,9 +10,6 @@
 #import "FMDB.h"
 #import "ZLSearchDatabaseConstants.h"
 
-#warning fix
-//#import "ADSDKUtilities.h"
-
 @interface ZLSearchResult ()
 
 @property (nonatomic, strong, readonly) NSString *imageUri;
@@ -46,14 +43,14 @@
 - (UIImage *)image
 {
     if (!_image) {
-        if (self.moduleId.length) {
-            NSError *error;
-#warning fix
-            NSString *moduleImagePath = nil;//[ADSDKUtilities absoluteFileLocationForModuleCoverArtWithModuleId:self.moduleId];
-            NSData *data = [NSData dataWithContentsOfFile:moduleImagePath options:0 error:&error];
-            if (!error) {
-                _image = [UIImage imageWithData:data];
-            }
+        
+        NSError *error;
+        NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
+        NSString *imagePath = [NSString stringWithFormat:@"%@/%@", cachesDirectory, self.imageUri];
+        
+        NSData *data = [NSData dataWithContentsOfFile:imagePath options:0 error:&error];
+        if (!error) {
+            _image = [UIImage imageWithData:data];
         }
         
         if (!_image && self.imageUri.length) {

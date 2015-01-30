@@ -16,7 +16,7 @@
 @property (nonatomic, strong, readonly) NSString *subtitle;
 @property (nonatomic, strong, readonly) NSString *uri;
 @property (nonatomic, strong, readonly) NSString *type;
-@property (nonatomic, strong, readonly) UIImage *image;
+@property (nonatomic, strong) UIImage *image;
 @property (nonatomic, assign, readonly) BOOL isFavorited;
 @property (nonatomic, strong, readonly) NSString *entityId;
 

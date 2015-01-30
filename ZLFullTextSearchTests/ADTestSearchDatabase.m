@@ -15,7 +15,6 @@
 #import "OCMock/OCMock.h"
 #import "ZLSearchResult.h"
 
-
 @interface ADTestSearchDatabase : XCTestCase
 
 @end
