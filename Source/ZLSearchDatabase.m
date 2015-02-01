@@ -133,24 +133,29 @@ static dispatch_once_t onceToken;
     return success;
 }
 
-+ (NSArray *)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset error:(NSError *__autoreleasing *)error
++ (NSArray *)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchSuggestions:(NSArray *__autoreleasing *)searchSuggestions error:(NSError *__autoreleasing *)error
 {
     __block NSMutableArray *formattedResults = [NSMutableArray new];
+    __block NSMutableDictionary *snippetDictionary = [NSMutableDictionary new];
+    
     [[self sharedQueue] inDatabase:^(FMDatabase *db) {
         [db open];
         
         NSString *formattedSearchText = [self stringWithLastWordHavingPrefixOperatorFromString:searchText];
         
         NSString *matchString = [NSString stringWithFormat:@"%@", formattedSearchText];
+        int searchWordCount = (int)[matchString componentsSeparatedByString:@" "].count;
+        NSString *snippetColumnName = @"snippet";
         
-        NSString *queryString = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@, %@, %@, %@, rank FROM %@ JOIN ("
-                                 "SELECT docid, rank(matchinfo(%@, 'pcnalx'), %@.%@) AS rank "
+        NSString *queryString = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@, %@, %@, %@, %@, rank FROM %@ JOIN ("
+                                 "SELECT docid, rank(matchinfo(%@, 'pcnalx'), %@.%@) AS rank, "
+                                 "snippet(%@, '', '', '', -1, %i) AS %@ "
                                  "FROM %@ "
                                  "WHERE %@ MATCH ? "
                                  "ORDER BY rank DESC "
                                  "LIMIT %i OFFSET %i "
                                  ") AS ranktable USING(docid) LEFT JOIN %@ AS fulltable USING(%@, %@) "
-                                 "ORDER BY ranktable.rank DESC;", kZLSearchDBModuleIdKey, kZLSearchDBEntityIdKey, kZLSearchDBTitleKey, kZLSearchDBSubtitleKey, kZLSearchDBUriKey, kZLSearchDBTypeKey, kZLSearchDBImageUriKey, kZLSearchDBIndexTableName, kZLSearchDBIndexTableName, kZLSearchDBIndexTableName, kZLSearchDBBoostKey, kZLSearchDBIndexTableName, kZLSearchDBIndexTableName, (int)limit, (int)offset,kZLSearchDBMetadataTableName, kZLSearchDBModuleIdKey, kZLSearchDBEntityIdKey];
+                                 "ORDER BY ranktable.rank DESC;", kZLSearchDBModuleIdKey, kZLSearchDBEntityIdKey, kZLSearchDBTitleKey, kZLSearchDBSubtitleKey, kZLSearchDBUriKey, kZLSearchDBTypeKey, kZLSearchDBImageUriKey, snippetColumnName, kZLSearchDBIndexTableName, kZLSearchDBIndexTableName, kZLSearchDBIndexTableName, kZLSearchDBBoostKey, kZLSearchDBIndexTableName, searchWordCount, snippetColumnName, kZLSearchDBIndexTableName, kZLSearchDBIndexTableName, (int)limit, (int)offset,kZLSearchDBMetadataTableName, kZLSearchDBModuleIdKey, kZLSearchDBEntityIdKey];
         
         FMResultSet *resultSet = [db executeQuery:queryString, matchString];
         if (!resultSet) {
@@ -160,11 +165,31 @@ static dispatch_once_t onceToken;
         }
         
         while ([resultSet next]) {
+            NSString *snippet = [[resultSet stringForColumn:snippetColumnName] lowercaseString];
+            int count = 1;
+            if ([snippet componentsSeparatedByString:@" "].count == searchWordCount) {
+                NSNumber *rankForExistingSnippet = [snippetDictionary objectForKey:snippet];
+                if (rankForExistingSnippet) {
+                    int existingCount = [rankForExistingSnippet intValue];
+                    count += existingCount;
+                }
+                [snippetDictionary setObject:[NSNumber numberWithInt:count] forKey:snippet];
+            }
+            
+            
             ZLSearchResult *searchResult = [[ZLSearchResult alloc] initWithFMResultSet:resultSet];
             [formattedResults addObject:searchResult];
         }
         [db closeOpenResultSets];
     }];
+    
+    if (searchSuggestions) {
+        *searchSuggestions = [snippetDictionary keysSortedByValueUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+            int number1 = [(NSNumber *)obj1 intValue];
+            int number2 = [(NSNumber *)obj2 intValue];
+            return number1 < number2;
+        }];
+    }
     
     return [formattedResults copy];
 }
