@@ -198,7 +198,8 @@ static dispatch_once_t onceToken;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         NSError *error;
-        NSArray *results = [ZLSearchDatabase searchFilesWithSearchText:searchText limit:limit offset:offset error:&error];
+        NSArray *searchSuggestions;
+        NSArray *results = [ZLSearchDatabase searchFilesWithSearchText:searchText limit:limit offset:offset searchSuggestions:&searchSuggestions error:&error];
         
         if (results.count) {
             [results makeObjectsPerformSelector:@selector(setFavoriteDelegate:) withObject:self.searchResultFavoriteDelegate];
@@ -209,9 +210,9 @@ static dispatch_once_t onceToken;
         dispatch_async(dispatch_get_main_queue(), ^{
             if (error) {
                 NSLog(@"Error searching in ADSearchManager %@", error);
-                completionBlock(nil, error);
+                completionBlock(nil, nil, error);
             } else {
-                completionBlock(results, nil);
+                completionBlock(results, searchSuggestions, nil);
             }
         });
     });

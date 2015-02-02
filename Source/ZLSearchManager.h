@@ -17,7 +17,7 @@ typedef NS_ENUM(NSInteger, ZLSearchTWActionType) {
     ZLSearchTWActionTypeRemoveFileFromIndex
 };
 
-typedef void (^ZLSearchCompletionBlock)(NSArray *searchResults, NSError *error);
+typedef void (^ZLSearchCompletionBlock)(NSArray *searchResults, NSArray *searchSuggestions, NSError *error);
 
 FOUNDATION_EXPORT NSString *const kTaskTypeSearch;
 FOUNDATION_EXPORT NSInteger const kMajorPrioritySearch;

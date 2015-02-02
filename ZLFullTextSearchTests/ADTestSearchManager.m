@@ -618,13 +618,14 @@
     ZLSearchResult *searchResult1 = [ZLSearchResult new];
     ZLSearchResult *searchResult2 = [ZLSearchResult new];
     NSArray *expectedResults = @[searchResult1, searchResult2];
+    NSArray *suggestions = @[@"one", @"two"];
     
     NSUInteger limit = 3;
     NSUInteger offset = 1;
     
     id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
     [[[mockSearchDatabase expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
-    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset error:[OCMArg anyObjectRef]];
+    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg setTo:suggestions] error:[OCMArg anyObjectRef]];
     
     id mockSearchBackupDelegate = [OCMockObject mockForProtocol:@protocol(ZLSearchBackupProtocol)];
     [[mockSearchBackupDelegate reject] backupSearchResultsForSearchText:formattedSearchText limit:limit offset:offset];
@@ -632,9 +633,10 @@
 
     
     XCTestExpectation *completionBlockExpectation = [self expectationWithDescription:@"completion block expectation"];
-    ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSError *error) {
+    ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
         XCTAssertTrue([NSThread isMainThread]);
         XCTAssertTrue([expectedResults isEqualToArray:results]);
+        XCTAssertTrue([searchSuggestions isEqualToArray:suggestions]);
         XCTAssertNil(error);
         [completionBlockExpectation fulfill];
     };
@@ -665,14 +667,14 @@
     
     id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
     [[[mockSearchDatabase expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
-    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset error:[OCMArg anyObjectRef]];
+    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
     
     id mockSearchBackupDelegate = [OCMockObject mockForProtocol:@protocol(ZLSearchBackupProtocol)];
     [[[mockSearchBackupDelegate expect] andReturn:backupResults] backupSearchResultsForSearchText:formattedSearchText limit:limit offset:offset];
     manager.backupSearchDelegate = mockSearchBackupDelegate;
     
     XCTestExpectation *completionBlockExpectation = [self expectationWithDescription:@"completion block expectation"];
-    ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSError *error) {
+    ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
         XCTAssertTrue([NSThread isMainThread]);
         XCTAssertTrue([backupResults isEqualToArray:results]);
         XCTAssertNil(error);
@@ -704,10 +706,10 @@
     NSError *fakeError = [NSError errorWithDomain:@"FakeError" code:-123 userInfo:nil];
     id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
     [[[mockSearchDatabase expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
-    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset error:[OCMArg setTo:fakeError]];
+    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg setTo:fakeError]];
     
     XCTestExpectation *completionBlockExpectation = [self expectationWithDescription:@"completion block expectation"];
-    ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSError *error) {
+    ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
         XCTAssertTrue([NSThread isMainThread]);
         XCTAssertNil(results);
         XCTAssertNotNil(error);
@@ -732,9 +734,9 @@
     NSUInteger offset = 11;
     
     id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
-    [[mockSearchDatabase reject] searchFilesWithSearchText:[OCMArg any] limit:limit offset:offset error:[OCMArg anyObjectRef]];
+    [[mockSearchDatabase reject] searchFilesWithSearchText:[OCMArg any] limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
     
-    ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSError *error) {
+    ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
         XCTFail(@"The completion block should not execute");
     };
     
