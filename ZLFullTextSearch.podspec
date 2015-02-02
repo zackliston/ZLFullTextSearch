@@ -25,11 +25,11 @@ Pod::Spec.new do |s|
                    This library manages indexing, searching and ranking results.
                    DESC
 
-  s.homepage     = "https://github.com/zackliston/ZLFullTextSearch"
+    s.homepage     = "https://github.com/zackliston/ZLFullTextSearch"
 
-  s.license      = { :type => "MIT", :file => "LICENSE" }
+    s.license      = { :type => "MIT", :file => "LICENSE" }
 
-  s.author             = { "Zack Liston" => "zackmliston@gmail.com" }
+    s.author             = { "Zack Liston" => "zackmliston@gmail.com" }
   # Or just: s.author    = "Zack Liston"
   # s.authors            = { "Zack Liston" => "zackmliston@gmail.com" }
     s.social_media_url   = "http://twitter.com/zackmliston"
@@ -37,7 +37,7 @@ Pod::Spec.new do |s|
 
     s.platform     = :ios, "7.0"
 
-  s.source       = { :git => "https://github.com/zackliston/ZLFullTextSearch.git", :tag => "0.0.1" }
+    s.source       = { :git => "https://github.com/zackliston/ZLFullTextSearch.git", :tag => "0.0.1" }
 
     s.source_files  = "Source", "Source/.{h,m,c}"
     s.requires_arc = true

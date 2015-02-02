@@ -173,7 +173,9 @@ static dispatch_once_t onceToken;
                     int existingCount = [rankForExistingSnippet intValue];
                     count += existingCount;
                 }
-                [snippetDictionary setObject:[NSNumber numberWithInt:count] forKey:snippet];
+                if (![snippet isEqualToString:searchText]) {
+                    [snippetDictionary setObject:[NSNumber numberWithInt:count] forKey:snippet];
+                }
             }
             
             
@@ -225,6 +227,7 @@ static dispatch_once_t onceToken;
     
     // This is a super temporary hack. The tagger doesn't stem the word if there is only one, so adding a word we know will be removed later makes sure that the words we're using are stemmed.
     oldString = [NSString stringWithFormat:@"and %@", oldString];
+    oldString = [oldString lowercaseString];
     
     NSLinguisticTagger *tagger = [[NSLinguisticTagger alloc] initWithTagSchemes:@[NSLinguisticTagSchemeLemma] options:(NSLinguisticTaggerOmitPunctuation | NSLinguisticTaggerOmitOther)];
     tagger.string = oldString;
@@ -253,6 +256,7 @@ static dispatch_once_t onceToken;
         }
     }];
     
+    newString = [newString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     return newString;
 }
 

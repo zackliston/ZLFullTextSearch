@@ -26,10 +26,21 @@ NSString *const kZLSearchTWFileMetadataKey = @"fileMetadata";
 
 @property (nonatomic, assign) ZLSearchTWActionType type;
 @property (nonatomic, strong) NSArray *urlArray;
+@property (nonatomic, strong) NSMutableArray *succeededIndexFileInfoDictionaries;
 
 @end
 
 @implementation ZLSearchTaskWorker
+
+#pragma mark - Getters/Setters
+
+- (NSMutableArray *)succeededIndexFileInfoDictionaries
+{
+    if (!_succeededIndexFileInfoDictionaries) {
+        _succeededIndexFileInfoDictionaries = [NSMutableArray new];
+    }
+    return _succeededIndexFileInfoDictionaries;
+}
 
 #pragma mark - Setup
 
@@ -58,8 +69,6 @@ NSString *const kZLSearchTWFileMetadataKey = @"fileMetadata";
         success = [ZLSearchDatabase removeFileWithModuleId:moduleId entityId:fileId];
         
     } else if (self.type == ZLSearchTWActionTypeIndexFile) {
-        NSMutableArray *remainingUrls = [self.urlArray mutableCopy];
-        
         for (NSString *url in self.urlArray) {
             if (self.cancelled) {
                 [self taskFinishedWasSuccessful:NO];
@@ -67,25 +76,9 @@ NSString *const kZLSearchTWFileMetadataKey = @"fileMetadata";
             }
             
             BOOL indexSuccess = [self indexFileFromUrl:url];
-            if (indexSuccess) {
-                // Remove the url so we don't keep retrying to index files that succeed
-                // If others haven't
-                [remainingUrls removeObject:url];
-                
-                NSString *absoluteUrl = [ZLSearchManager absoluteUrlForFileInfoFromRelativeUrl:url];
-                NSError *removeError;
-                [[NSFileManager defaultManager] removeItemAtPath:absoluteUrl error:&removeError];
-                if (removeError) {
-                    NSLog(@"Error removing file index info after indexing %@", removeError);
-                }
-            } else {
+            if (!indexSuccess) {
                 success = indexSuccess;
             }
-            
-            // Update the URLs array so we minimize unneccessary repeatation
-            NSMutableDictionary *mutableJsonData = [self.workItem.jsonData mutableCopy];
-            [mutableJsonData setObject:[remainingUrls copy] forKey:kZLSearchTWFileInfoUrlArrayKey];
-            self.workItem.jsonData = [mutableJsonData copy];
         }
     }
     
@@ -120,13 +113,52 @@ NSString *const kZLSearchTWFileMetadataKey = @"fileMetadata";
             return NO;
         }
         BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:preparedSearchableStrings fileMetadata:metadata];
-        
         if (success) {
-            [self.delegate searchTaskWorkerIndexedFileWithModuleId:moduleId fileId:entityId];
+            NSDictionary *fileInfo = @{kZLSearchTWModuleIdKey:moduleId, kZLSearchTWEntityIdKey:entityId, @"url":url};
+            [self.succeededIndexFileInfoDictionaries addObject:fileInfo];
         }
-        
         return success;
     }
+}
+
+#pragma mark - Task Succeeded
+
+- (void)taskFinishedWasSuccessful:(BOOL)wasSuccessful
+{
+    if (self.cancelled) {
+        [super taskFinishedWasSuccessful:NO];
+        return;
+    }
+    
+    if (self.type == ZLSearchTWActionTypeRemoveFileFromIndex) {
+        [super taskFinishedWasSuccessful:wasSuccessful];
+        return;
+    }
+    
+    NSMutableArray *remainingUrls = [[self.workItem.jsonData objectForKey:kZLSearchTWFileInfoUrlArrayKey] mutableCopy];
+    
+    for (NSDictionary *indexFileInfo in self.succeededIndexFileInfoDictionaries) {
+        NSString *url = [indexFileInfo objectForKey:@"url"];
+        
+        NSString *absoluteUrl = [ZLSearchManager absoluteUrlForFileInfoFromRelativeUrl:url];
+        NSError *removeError;
+        [[NSFileManager defaultManager] removeItemAtPath:absoluteUrl error:&removeError];
+        if (removeError) {
+            NSLog(@"Error removing file index info after indexing %@", removeError);
+        }
+        [remainingUrls removeObject:url];
+    }
+    
+    NSArray *entityIds = [self.succeededIndexFileInfoDictionaries valueForKeyPath:kZLSearchTWEntityIdKey];
+    NSArray *moduleIds = [self.succeededIndexFileInfoDictionaries valueForKeyPath:kZLSearchTWModuleIdKey];
+    [self.delegate searchTaskWorkerIndexedFilesWithModuleIds:moduleIds fileIds:entityIds];
+    
+    // Update the URLs array so we minimize unneccessary repeatation
+    NSMutableDictionary *mutableJsonData = [self.workItem.jsonData mutableCopy];
+    [mutableJsonData setObject:[remainingUrls copy] forKey:kZLSearchTWFileInfoUrlArrayKey];
+    self.workItem.jsonData = [mutableJsonData copy];
+    
+    [super taskFinishedWasSuccessful:wasSuccessful];
 }
 
 #pragma mark - Helpers

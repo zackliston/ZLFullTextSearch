@@ -8,6 +8,6 @@
 
 @protocol ZLSearchTaskWorkerProtocol <NSObject>
 
-- (void)searchTaskWorkerIndexedFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId;
+- (void)searchTaskWorkerIndexedFilesWithModuleIds:(NSArray *)moduleIds fileIds:(NSArray *)fileIds;
 
 @end

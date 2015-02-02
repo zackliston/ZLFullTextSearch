@@ -22,6 +22,7 @@
 
 @property (nonatomic, assign) ZLSearchTWActionType type;
 @property (nonatomic, strong) NSArray *urlArray;
+@property (nonatomic, strong) NSMutableArray *succeededIndexFileInfoDictionaries;
 
 - (NSDictionary *)preparedSearchStringsFromSearchableStrings:(NSDictionary *)rawSearchableStrings;
 - (BOOL)indexFileFromUrl:(NSString *)url;
@@ -76,38 +77,20 @@
     NSString *url1 = @"url1";
     NSString *url2 = @"url2";
     NSArray *urlArray = @[url1, url2];
-    NSString *absoluteUrl1 = @"absUrl1";
-    NSString *absoluteUrl2 = @"absUrl2";
-
     
     ZLSearchTaskWorker *taskWorker = [ZLSearchTaskWorker new];
     taskWorker.urlArray = urlArray;
     taskWorker.type = actionType;
-    
-    id mockSearchManager = [OCMockObject mockForClass:[ZLSearchManager class]];
-    [[[mockSearchManager expect] andReturn:absoluteUrl1] absoluteUrlForFileInfoFromRelativeUrl:url1];
-    [[[mockSearchManager expect] andReturn:absoluteUrl2] absoluteUrlForFileInfoFromRelativeUrl:url2];
     
     id mockWorker = [OCMockObject partialMockForObject:taskWorker];
     [[[mockWorker expect] andReturnValue:OCMOCK_VALUE(YES)] indexFileFromUrl:url1];
     [[[mockWorker expect] andReturnValue:OCMOCK_VALUE(YES)] indexFileFromUrl:url2];
     [[mockWorker expect] taskFinishedWasSuccessful:YES];
     
-    NSFileManager *fileManager = [NSFileManager new];
-    id mockFileManager = [OCMockObject partialMockForObject:fileManager];
-    [[[mockFileManager expect] andReturnValue:OCMOCK_VALUE(YES)] removeItemAtPath:absoluteUrl1 error:[OCMArg anyObjectRef]];
-    [[[mockFileManager expect] andReturnValue:OCMOCK_VALUE(YES)] removeItemAtPath:absoluteUrl2 error:[OCMArg anyObjectRef]];
-    
-    id mockFileManagerClass = [OCMockObject mockForClass:[NSFileManager class]];
-    [[[mockFileManagerClass stub] andReturn:mockFileManager] defaultManager];
     
     [taskWorker main];
     
-    [mockFileManager verify];
-    [mockFileManagerClass stopMocking];
     [mockWorker verify];
-    [mockSearchManager verify];
-    [mockSearchManager stopMocking];
 }
 
 - (void)testMainIndexFileFailure
@@ -115,7 +98,7 @@
     ZLSearchTWActionType actionType = ZLSearchTWActionTypeIndexFile;
     NSString *url1 = @"url1";
     NSString *url2 = @"url2";
-     NSString *absoluteUrl1 = @"absUrl1";
+    NSString *absoluteUrl1 = @"absUrl1";
     NSArray *urlArray = @[url1, url2];
     
     ZLSearchTaskWorker *taskWorker = [ZLSearchTaskWorker new];
@@ -124,34 +107,15 @@
     workItem.jsonData = @{kZLSearchTWFileInfoUrlArrayKey:urlArray, kZLSearchTWActionTypeKey:[NSNumber numberWithInteger:actionType]};
     [taskWorker setupWithWorkItem:workItem];
     
-    id mockSearchManager = [OCMockObject mockForClass:[ZLSearchManager class]];
-    [[[mockSearchManager expect] andReturn:absoluteUrl1] absoluteUrlForFileInfoFromRelativeUrl:url1];
-    
     id mockWorker = [OCMockObject partialMockForObject:taskWorker];
     [[[mockWorker expect] andReturnValue:OCMOCK_VALUE(YES)] indexFileFromUrl:url1];
     [[[mockWorker expect] andReturnValue:OCMOCK_VALUE(NO)] indexFileFromUrl:url2];
     [[mockWorker expect] taskFinishedWasSuccessful:NO];
     
-    NSFileManager *fileManager = [NSFileManager new];
-    id mockFileManager = [OCMockObject partialMockForObject:fileManager];
-    [[[mockFileManager expect] andReturnValue:OCMOCK_VALUE(YES)] removeItemAtPath:absoluteUrl1 error:[OCMArg anyObjectRef]];
-    [[mockFileManager reject] removeItemAtPath:url2 error:[OCMArg anyObjectRef]];
-    
-    id mockFileManagerClass = [OCMockObject mockForClass:[NSFileManager class]];
-    [[[mockFileManagerClass stub] andReturn:mockFileManager] defaultManager];
-    
     
     [taskWorker main];
     
-    NSArray *newUrls = [taskWorker.workItem.jsonData objectForKey:kZLSearchTWFileInfoUrlArrayKey];
-    XCTAssertEqual(newUrls.count, 1);
-    XCTAssertTrue([[newUrls firstObject] isEqualToString:url2]);
-    
-    [mockFileManager verify];
-    [mockFileManagerClass stopMocking];
     [mockWorker verify];
-    [mockSearchManager verify];
-    [mockSearchManager stopMocking];
 }
 
 #pragma mark Test RemoveFileType
@@ -218,6 +182,9 @@
     NSString *fileId = @"fileadsf";
     NSString *language = @"enn";
     double boost = 12.3;
+    
+    NSDictionary *expectedSuccessDictionary = @{kZLSearchTWModuleIdKey:moduleId, kZLSearchTWEntityIdKey:fileId, @"url":relativeUrl};
+    
     NSDictionary *searchableStrings = @{@"key2":@"value3"};
     NSDictionary *metadata = @{@"keymeta":@"valueMeta"};
     
@@ -228,11 +195,8 @@
     id mockUnarchieve = [OCMockObject mockForClass:[NSKeyedUnarchiver class]];
     [[[mockUnarchieve expect] andReturn:indexInfo] unarchiveObjectWithFile:absoluteUrl];
     
-    id mockDelegate = [OCMockObject mockForProtocol:@protocol(ZLSearchTaskWorkerProtocol)];
-    [[mockDelegate expect] searchTaskWorkerIndexedFileWithModuleId:moduleId fileId:fileId];
-    
+  
     ZLSearchTaskWorker *worker = [ZLSearchTaskWorker new];
-    worker.delegate = mockDelegate;
     id mockWorker = [OCMockObject partialMockForObject:worker];
     [[[mockWorker expect] andReturn:preparedSearchableStrings] preparedSearchStringsFromSearchableStrings:searchableStrings];
     
@@ -245,8 +209,10 @@
     BOOL success = [worker indexFileFromUrl:relativeUrl];
     XCTAssertTrue(success);
     
-    [mockDelegate verify];
-    [mockDelegate stopMocking];
+    XCTAssertEqual(worker.succeededIndexFileInfoDictionaries.count, 1);
+    NSDictionary *actualSuccessDictioanry = [worker.succeededIndexFileInfoDictionaries objectAtIndex:0];
+    XCTAssertTrue([actualSuccessDictioanry isEqualToDictionary:expectedSuccessDictionary]);
+    
     [mockWorker verify];
     [mockUnarchieve verify];
     [mockUnarchieve stopMocking];
@@ -264,11 +230,7 @@
     id mockUnarchieve = [OCMockObject mockForClass:[NSKeyedUnarchiver class]];
     [[[mockUnarchieve expect] andReturn:nil] unarchiveObjectWithFile:absoluteUrl];
     
-    id mockDelegate = [OCMockObject mockForProtocol:@protocol(ZLSearchTaskWorkerProtocol)];
-    [[mockDelegate reject] searchTaskWorkerIndexedFileWithModuleId:[OCMArg any] fileId:[OCMArg any]];
-    
     ZLSearchTaskWorker *worker = [ZLSearchTaskWorker new];
-    worker.delegate = mockDelegate;
 
     id mockWorker = [OCMockObject partialMockForObject:worker];
     [[mockWorker reject] preparedSearchStringsFromSearchableStrings:[OCMArg any]];
@@ -282,9 +244,8 @@
     
     BOOL success = [worker indexFileFromUrl:relativeUrl];
     XCTAssertTrue(success);
+    XCTAssertEqual(worker.succeededIndexFileInfoDictionaries.count, 0);
     
-    [mockDelegate verify];
-    [mockDelegate stopMocking];
     [mockWorker verify];
     [mockUnarchieve verify];
     [mockUnarchieve stopMocking];
@@ -313,11 +274,7 @@
     id mockUnarchieve = [OCMockObject mockForClass:[NSKeyedUnarchiver class]];
     [[[mockUnarchieve expect] andReturn:indexInfo] unarchiveObjectWithFile:absoluteUrl];
     
-    id mockDelegate = [OCMockObject mockForProtocol:@protocol(ZLSearchTaskWorkerProtocol)];
-    [[mockDelegate reject] searchTaskWorkerIndexedFileWithModuleId:[OCMArg any] fileId:[OCMArg any]];
-    
     ZLSearchTaskWorker *worker = [ZLSearchTaskWorker new];
-    worker.delegate = mockDelegate;
 
     id mockWorker = [OCMockObject partialMockForObject:worker];
     [[[mockWorker expect] andReturn:preparedSearchableStrings] preparedSearchStringsFromSearchableStrings:searchableStrings];
@@ -331,9 +288,8 @@
     
     BOOL success = [worker indexFileFromUrl:relativeUrl];
     XCTAssertFalse(success);
+    XCTAssertEqual(worker.succeededIndexFileInfoDictionaries.count, 0);
     
-    [mockDelegate verify];
-    [mockDelegate stopMocking];
     [mockWorker verify];
     [mockUnarchieve verify];
     [mockUnarchieve stopMocking];
@@ -342,7 +298,6 @@
     [mockSearchManager verify];
     [mockSearchManager stopMocking];
 }
-
 
 #pragma mark - Test preparedStrings
 
@@ -373,5 +328,69 @@
     [mockSearchDatabase stopMocking];
 }
 
+#pragma mark - Test taskFinishedWasSuccessful
+
+- (void)testTaskFinishedWasSuccessfulIndexType
+{
+    NSString *entityId1 = @"ent";
+    NSString *entityId2 = @"ent2";
+    NSString *moduleId1 = @"mod1";
+    NSString *moduleId2 = @"mod2";
+    NSArray *expectedModuleIdArray = @[moduleId1, moduleId2];
+    NSArray *expectedEntityIdArray = @[entityId1, entityId2];
+    NSString *url1 = @"url1";
+    NSString *url2 = @"url2";
+    NSString *url3 = @"url3";
+    NSString *absoluteUrl1 = @"absUrl1";
+    NSString *absoluteUrl2 = @"absUrl2";
+    
+    NSDictionary *success1 = @{kZLSearchTWEntityIdKey:entityId1, kZLSearchTWModuleIdKey:moduleId1, @"url":url1};
+    NSDictionary *success2 = @{kZLSearchTWEntityIdKey:entityId2, kZLSearchTWModuleIdKey:moduleId2, @"url":url2};
+    
+    id mockDelegate = [OCMockObject mockForProtocol:@protocol(ZLSearchTaskWorkerProtocol)];
+    [[mockDelegate expect] searchTaskWorkerIndexedFilesWithModuleIds:[OCMArg checkWithBlock:^BOOL(id obj) {
+        NSArray *moduleIdArray = (NSArray *)obj;
+        XCTAssertTrue([moduleIdArray isEqualToArray:expectedModuleIdArray]);
+        
+        return YES;
+    }] fileIds:[OCMArg checkWithBlock:^BOOL(id obj) {
+        NSArray *fileIdArray = (NSArray *)obj;
+        XCTAssertTrue([fileIdArray isEqualToArray:expectedEntityIdArray]);
+        
+        return YES;
+    }]];
+    
+    id mockSearchManager = [OCMockObject mockForClass:[ZLSearchManager class]];
+    [[[mockSearchManager expect] andReturn:absoluteUrl1] absoluteUrlForFileInfoFromRelativeUrl:url1];
+    [[[mockSearchManager expect] andReturn:absoluteUrl2] absoluteUrlForFileInfoFromRelativeUrl:url2];
+    
+    NSFileManager *fileManager = [NSFileManager new];
+    id mockFileManager = [OCMockObject partialMockForObject:fileManager];
+    [[[mockFileManager expect] andReturnValue:OCMOCK_VALUE(YES)] removeItemAtPath:absoluteUrl1 error:[OCMArg anyObjectRef]];
+    [[[mockFileManager expect] andReturnValue:OCMOCK_VALUE(YES)] removeItemAtPath:absoluteUrl2 error:[OCMArg anyObjectRef]];
+    
+    id mockFileManagerClass = [OCMockObject mockForClass:[NSFileManager class]];
+    [[[mockFileManagerClass stub] andReturn:mockFileManager] defaultManager];
+
+    ZLSearchTaskWorker *worker = [ZLSearchTaskWorker new];
+    [worker setupWithWorkItem:[ZLInternalWorkItem new]];
+    worker.delegate = mockDelegate;
+    worker.succeededIndexFileInfoDictionaries = [@[success1, success2] mutableCopy];
+    worker.type = ZLSearchTWActionTypeIndexFile;
+    worker.workItem.jsonData = @{kZLSearchTWFileInfoUrlArrayKey:@[url1, url2, url3]};
+    
+    [worker taskFinishedWasSuccessful:YES];
+    
+    NSArray *newUrls = [worker.workItem.jsonData objectForKey:kZLSearchTWFileInfoUrlArrayKey];
+    XCTAssertEqual(newUrls.count, 1);
+    XCTAssertTrue([[newUrls firstObject] isEqualToString:url3]);
+    
+    [mockFileManager verify];
+    [mockFileManagerClass stopMocking];
+    [mockSearchManager verify];
+    [mockSearchManager stopMocking];
+    [mockDelegate verify];
+    [mockDelegate stopMocking];
+}
 
 @end
