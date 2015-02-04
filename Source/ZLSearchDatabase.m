@@ -23,6 +23,7 @@
 @interface ZLSearchDatabase ()
 
 @property (nonatomic, strong) FMDatabaseQueue *queue;
+@property (nonatomic, strong) NSString *databaseName;
 
 @end
 
@@ -34,20 +35,25 @@
 {
     self = [super init];
     if (self) {
-        NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
-        NSString *path = [[NSString alloc] initWithString:[cachesDirectory stringByAppendingPathComponent:databaseName]];
-        
-        self.queue = [[FMDatabaseQueue alloc] initWithPath:path flags:SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FILEPROTECTION_NONE];
-        
-        [self.queue inDatabase:^(FMDatabase *db) {
-            [db open];
-            [ZLSearchDatabase createTablesForDatabase:db];
-            [ZLSearchDatabase issueAutomergeCommandForDatabase:db];
-            [ZLSearchDatabase registerRankingFunctionForDatabase:db];
-        }];
-        
+        self.databaseName = databaseName;
+        [self setupDatabaseQueueWithName:databaseName];
     }
     return self;
+}
+
+- (void)setupDatabaseQueueWithName:(NSString *)databaseName;
+{
+    NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
+    NSString *path = [[NSString alloc] initWithString:[cachesDirectory stringByAppendingPathComponent:databaseName]];
+    
+    self.queue = [[FMDatabaseQueue alloc] initWithPath:path flags:SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FILEPROTECTION_NONE];
+    
+    [self.queue inDatabase:^(FMDatabase *db) {
+        [db open];
+        [ZLSearchDatabase createTablesForDatabase:db];
+        [ZLSearchDatabase issueAutomergeCommandForDatabase:db];
+        [ZLSearchDatabase registerRankingFunctionForDatabase:db];
+    }];
 }
 
 #pragma mark - Public Methods
@@ -215,6 +221,8 @@
         
         [db close];
     }];
+    self.queue = nil;
+    [self setupDatabaseQueueWithName:self.databaseName];
     
     return success;
 }
