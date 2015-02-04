@@ -41,6 +41,13 @@
     return self;
 }
 
+#pragma mark - Getters/Setters
+
++ (NSSet *)stopWords
+{
+    return [NSSet setWithArray:@[@"and", @"are", @"as", @"at", @"be", @"because", @"been", @"but", @"by", @"for", @"however", @"to", @"in", @"this", @"if", @"not", @"of", @"on", @"or",@"so", @"the", @"there", @"was", @"were", @"whatever",@"whether", @"would"]];
+}
+
 - (void)setupDatabaseQueueWithName:(NSString *)databaseName;
 {
     NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
@@ -153,7 +160,7 @@
         NSString *formattedSearchText = [ZLSearchDatabase stringWithLastWordHavingPrefixOperatorFromString:searchText];
         
         NSString *matchString = [NSString stringWithFormat:@"%@", formattedSearchText];
-        int searchWordCount = (int)[matchString componentsSeparatedByString:@" "].count;
+        int searchWordCount = (int)[matchString componentsSeparatedByString:@" "].count+1;
         NSString *snippetColumnName = @"snippet";
         
         NSString *queryString = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@, %@, %@, %@, %@, rank FROM %@ JOIN ("
@@ -175,18 +182,7 @@
         
         while ([resultSet next]) {
             NSString *snippet = [[resultSet stringForColumn:snippetColumnName] lowercaseString];
-            int count = 1;
-            if ([snippet componentsSeparatedByString:@" "].count == searchWordCount) {
-                NSNumber *rankForExistingSnippet = [snippetDictionary objectForKey:snippet];
-                if (rankForExistingSnippet) {
-                    int existingCount = [rankForExistingSnippet intValue];
-                    count += existingCount;
-                }
-                if (![snippet isEqualToString:searchText]) {
-                    [snippetDictionary setObject:[NSNumber numberWithInt:count] forKey:snippet];
-                }
-            }
-            
+            snippetDictionary = [self addSuggestionToDictionary:snippetDictionary fromSnippet:snippet inReferenceToSearchText:searchText];
             
             ZLSearchResult *searchResult = [[ZLSearchResult alloc] initWithFMResultSet:resultSet];
             [formattedResults addObject:searchResult];
@@ -203,6 +199,82 @@
     }
     
     return [formattedResults copy];
+}
+
+- (NSMutableDictionary *)addSuggestionToDictionary:(NSMutableDictionary *)suggestionDictionary fromSnippet:(NSString *)snippet inReferenceToSearchText:(NSString *)searchText
+{
+    
+    NSMutableSet *formattedSnippetWords = [NSMutableSet new];
+    for (NSString *word in [snippet componentsSeparatedByString:@" "]) {
+        // Remove all unneccessary words
+        if ([word isEqualToString:@" "] || [[ZLSearchDatabase stopWords] containsObject:word] || !word.length) {
+            continue;
+        }
+        
+        BOOL shouldAddWord = NO;
+        // Add all words to the suggestion dictionary that contain our search text, but don't exactly match it.
+        // We don't add the ones that exactly match because if they exactly match the user already has typed what he's looking for
+        // We don't add words that don't contain the search text because they could outnumber the better results
+        
+        for (NSString *searchWord in [searchText componentsSeparatedByString:@" "]) {
+            if ([word rangeOfString:searchWord].location != NSNotFound) {
+                shouldAddWord = YES;
+            }
+            if ([word isEqualToString:searchWord]) {
+                shouldAddWord = NO;
+            }
+        }
+        
+        // Either add the word or increment it's existing count.
+        int count = 1;
+        if (shouldAddWord) {
+            NSNumber *rankForExistingSnippet = [suggestionDictionary objectForKey:word];
+            if (rankForExistingSnippet) {
+                int existingCount = [rankForExistingSnippet intValue];
+                count += existingCount;
+            }
+            [suggestionDictionary setObject:[NSNumber numberWithInt:count] forKey:word];
+        }
+        
+        // Whether or not we add the word to the suggestions, we need to add it here so we can re-construct the
+        // snippet, but formatted correctly
+        [formattedSnippetWords addObject:word];
+    }
+    
+    // Re-construct the formatted snippet and add it to the suggestion dictionary
+    NSString *formattedSnippet = [[formattedSnippetWords allObjects] componentsJoinedByString:@" "];
+    NSNumber *rankForPhrase = [suggestionDictionary objectForKey:formattedSnippet];
+    int newCount = 1;
+    if (rankForPhrase) {
+        int existingCount = [rankForPhrase intValue];
+        newCount += existingCount;
+    }
+    [suggestionDictionary setObject:[NSNumber numberWithInt:newCount] forKey:formattedSnippet];
+    
+    // The above won't work for suggestions with the same words but in a different order
+    // So go through each suggestion and if it has the same words, increment it
+    // Don't increment it if it only has one word
+    for (NSString *suggestion in suggestionDictionary.allKeys) {
+        BOOL incrementSuggestion = YES;
+        NSArray *suggestionWordArray = [suggestion componentsSeparatedByString:@" "];
+        if (suggestionWordArray.count > 1) {
+            for (NSString *suggestionWord in suggestionWordArray) {
+                if (![formattedSnippet containsString:suggestionWord]) {
+                    incrementSuggestion = NO;
+                }
+            }
+        } else {
+            incrementSuggestion = NO;
+        }
+        if (incrementSuggestion) {
+            NSNumber *rankForExistingSnippet = [suggestionDictionary objectForKey:suggestion];
+            int existingCount = [rankForExistingSnippet intValue];
+            existingCount++;
+            [suggestionDictionary setObject:[NSNumber numberWithInt:existingCount] forKey:suggestion];
+        }
+    }
+    
+    return suggestionDictionary;
 }
 
 - (BOOL)resetDatabase
@@ -230,7 +302,7 @@
 + (NSString *)searchableStringFromString:(NSString *)oldString
 {
     __block NSString *newString = @"";
-    __block NSArray *stopWords = @[@"and", @"are", @"as", @"at", @"be", @"because", @"been", @"but", @"by", @"for", @"however", @"if", @"not", @"of", @"on", @"or",@"so", @"the", @"there", @"was", @"were", @"whatever",@"whether", @"would"];
+    __block NSSet *stopWords = [self stopWords];
     
     // This is a super temporary hack. The tagger doesn't stem the word if there is only one, so adding a word we know will be removed later makes sure that the words we're using are stemmed.
     oldString = [NSString stringWithFormat:@"and %@", oldString];
