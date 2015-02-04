@@ -259,7 +259,7 @@
         NSArray *suggestionWordArray = [suggestion componentsSeparatedByString:@" "];
         if (suggestionWordArray.count > 1) {
             for (NSString *suggestionWord in suggestionWordArray) {
-                if (![formattedSnippet containsString:suggestionWord]) {
+                if ([formattedSnippet rangeOfString:suggestionWord].location == NSNotFound) {
                     incrementSuggestion = NO;
                 }
             }
