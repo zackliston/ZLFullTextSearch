@@ -54,7 +54,7 @@ FOUNDATION_EXPORT NSString *const kZLFileMetadataImageURI;
 - (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata searchDatabaseName:(NSString *)searchDatabaseName;
 - (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId searchDatabaseName:(NSString *)searchDatabaseName;
 - (BOOL)resetSearchDatabaseWithName:(NSString *)searchDatabaseName;
-- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset completionBlock:(ZLSearchCompletionBlock)completionBlock searchDatabaseName:(NSString *)searchDatabaseName;
+- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchDatabaseName:(NSString *)searchDatabaseName completionBlock:(ZLSearchCompletionBlock)completionBlock;
 
 + (NSString *)absoluteUrlForFileInfoFromRelativeUrl:(NSString *)relativeUrl;
 

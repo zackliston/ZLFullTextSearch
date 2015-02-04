@@ -65,6 +65,10 @@ static dispatch_once_t onceToken;
         NSLog(@"Cannot get a searchDatabase with a nil name");
         return nil;
     }
+    ZLSearchDatabase *database = [self.searchDatabaseDictionary objectForKey:searchDatabaseName];
+    if (!database) {
+        [self setupSearchDatabaseWithName:searchDatabaseName];
+    }
     return [self.searchDatabaseDictionary objectForKey:searchDatabaseName];
 }
 
@@ -234,7 +238,7 @@ static dispatch_once_t onceToken;
 
 #pragma mark Search
 
-- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset completionBlock:(ZLSearchCompletionBlock)completionBlock searchDatabaseName:(NSString *)searchDatabaseName
+- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchDatabaseName:(NSString *)searchDatabaseName completionBlock:(ZLSearchCompletionBlock)completionBlock
 {
     BOOL success = YES;
     if (limit < 1) {

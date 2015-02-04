@@ -8,9 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-FOUNDATION_EXPORT NSString *const kZLSearchDatabaseLocation;
-FOUNDATION_EXPORT NSString *const kZLSearchDBTokenizerName;
-
 FOUNDATION_EXPORT NSString *const kZLSearchDBIndexTableName;
 FOUNDATION_EXPORT NSString *const kZLSearchDBMetadataTableName;
 

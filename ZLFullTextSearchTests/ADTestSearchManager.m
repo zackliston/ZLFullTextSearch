@@ -79,12 +79,18 @@
 
 - (void)testSearchDatabaseForNameNoMatchingDatabase
 {
+    NSString *dbName = @"dbname";
+    
     ZLSearchManager *manager = [ZLSearchManager new];
     ZLSearchDatabase *database = [ZLSearchDatabase new];
     manager.searchDatabaseDictionary = @{@"key":database};
     
-    ZLSearchDatabase *returnedDatabase = [manager searchDatabaseForName:@"n/a"];
-    XCTAssertNil(returnedDatabase);
+    id mockManager = [OCMockObject partialMockForObject:manager];
+    [[mockManager expect] setupSearchDatabaseWithName:dbName];
+    [manager searchDatabaseForName:dbName];
+    
+    [mockManager verify];
+   
 }
 
 - (void)testSearchDatabaseForNameMatchingDatabase
@@ -771,7 +777,7 @@
     id mockSearchDatabaseClass = [OCMockObject mockForClass:[ZLSearchDatabase class]];
     [[[mockSearchDatabaseClass expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
     
-    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock searchDatabaseName:dbName];
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:dbName completionBlock:completionBlock];
     XCTAssertTrue(success);
     
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
@@ -821,7 +827,7 @@
     id mockSearchDatabaseClass = [OCMockObject mockForClass:[ZLSearchDatabase class]];
     [[[mockSearchDatabaseClass expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
 
-    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock searchDatabaseName:dbName];
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:dbName completionBlock:completionBlock];
     XCTAssertTrue(success);
     
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
@@ -867,7 +873,7 @@
     id mockSearchDatabaseClass = [OCMockObject mockForClass:[ZLSearchDatabase class]];
     [[[mockSearchDatabaseClass expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
     
-    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock searchDatabaseName:dbName];
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:dbName completionBlock:completionBlock];
     XCTAssertTrue(success);
     
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
@@ -897,7 +903,7 @@
         XCTFail(@"The completion block should not execute");
     };
     
-    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock searchDatabaseName:dbName];
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:dbName completionBlock:completionBlock];
     XCTAssertFalse(success);
     
     [mockSearchDatabase verify];

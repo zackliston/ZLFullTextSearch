@@ -8,8 +8,6 @@
 
 #import "ZLSearchDatabaseConstants.h"
 
-NSString *const kZLSearchDatabaseLocation = @"ADSearchDatabase.db";
-NSString *const kZLSearchDBTokenizerName = @"customstopwordtokenizer";
 
 NSString *const kZLSearchDBIndexTableName = @"searchindex";
 NSString *const kZLSearchDBMetadataTableName = @"searchmetadata";
