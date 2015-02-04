@@ -20,36 +20,39 @@
 - (id)initWithFMResultSet:(FMResultSet *)resultSet;
 @end
 
-@implementation ZLSearchDatabase
+@interface ZLSearchDatabase ()
 
-static FMDatabaseQueue *_sharedQueue = nil;
-static dispatch_once_t onceToken;
+@property (nonatomic, strong) FMDatabaseQueue *queue;
+
+@end
+
+@implementation ZLSearchDatabase
 
 #pragma mark - Initialization
 
-+ (FMDatabaseQueue *)sharedQueue
+- (id)initWithDatabaseName:(NSString *)databaseName
 {
-    dispatch_once(&onceToken, ^{
+    self = [super init];
+    if (self) {
         NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
-        NSString *path = [[NSString alloc] initWithString:[cachesDirectory stringByAppendingPathComponent:kZLSearchDatabaseLocation]];
+        NSString *path = [[NSString alloc] initWithString:[cachesDirectory stringByAppendingPathComponent:databaseName]];
         
-        _sharedQueue = [[FMDatabaseQueue alloc] initWithPath:path flags:SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FILEPROTECTION_NONE];
+        self.queue = [[FMDatabaseQueue alloc] initWithPath:path flags:SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FILEPROTECTION_NONE];
         
-        [_sharedQueue inDatabase:^(FMDatabase *db) {
+        [self.queue inDatabase:^(FMDatabase *db) {
             [db open];
-            [self createTablesForDatabase:db];
-            [self issueAutomergeCommandForDatabase:db];
-            [self registerRankingFunctionForDatabase:db];
-            
+            [ZLSearchDatabase createTablesForDatabase:db];
+            [ZLSearchDatabase issueAutomergeCommandForDatabase:db];
+            [ZLSearchDatabase registerRankingFunctionForDatabase:db];
         }];
-    });
-    
-    return _sharedQueue;
+        
+    }
+    return self;
 }
 
 #pragma mark - Public Methods
 
-+ (BOOL)indexFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata
+- (BOOL)indexFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata
 {
     
     __block BOOL success = YES;
@@ -74,11 +77,11 @@ static dispatch_once_t onceToken;
         [self removeFileWithModuleId:moduleId entityId:entityId];
     }
     
-    [[self sharedQueue] inTransaction:^(FMDatabase *db, BOOL *rollback) {
+    [self.queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
         [db open];
         
-        NSString *indexInsertString = [self insertStringForIndexWithSearchableStrings:searchableStrings];
-        NSDictionary *indexValuesDictionary = [self insertDictionaryForIndexWithModuleID:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings];
+        NSString *indexInsertString = [ZLSearchDatabase insertStringForIndexWithSearchableStrings:searchableStrings];
+        NSDictionary *indexValuesDictionary = [ZLSearchDatabase insertDictionaryForIndexWithModuleID:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings];
         
         success = [db executeUpdate:indexInsertString withParameterDictionary:indexValuesDictionary];
         if (!success) {
@@ -86,8 +89,8 @@ static dispatch_once_t onceToken;
             *rollback = YES;
         }
         
-        NSString *metadataInsertString = [self insertStringForMetadataWithFileMetadata:fileMetadata];
-        NSDictionary *metadataValuesDictionary = [self insertDictionaryForMetadataWithModuleId:moduleId entityId:entityId metadata:fileMetadata];
+        NSString *metadataInsertString = [ZLSearchDatabase insertStringForMetadataWithFileMetadata:fileMetadata];
+        NSDictionary *metadataValuesDictionary = [ZLSearchDatabase insertDictionaryForMetadataWithModuleId:moduleId entityId:entityId metadata:fileMetadata];
         
         success = [db executeUpdate:metadataInsertString withParameterDictionary:metadataValuesDictionary];
         if (!success) {
@@ -101,7 +104,7 @@ static dispatch_once_t onceToken;
     return success;
 }
 
-+ (BOOL)removeFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId
+- (BOOL)removeFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId
 {
     __block BOOL success = YES;
     
@@ -110,7 +113,7 @@ static dispatch_once_t onceToken;
         return success;
     }
     
-    [[self sharedQueue] inTransaction:^(FMDatabase *db, BOOL *rollback) {
+    [self.queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
         [db open];
         NSString *indexDeleteCommand = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = ? AND %@ = ?", kZLSearchDBIndexTableName, kZLSearchDBModuleIdKey, kZLSearchDBEntityIdKey];
         
@@ -133,15 +136,15 @@ static dispatch_once_t onceToken;
     return success;
 }
 
-+ (NSArray *)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchSuggestions:(NSArray *__autoreleasing *)searchSuggestions error:(NSError *__autoreleasing *)error
+- (NSArray *)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchSuggestions:(NSArray *__autoreleasing *)searchSuggestions error:(NSError *__autoreleasing *)error
 {
     __block NSMutableArray *formattedResults = [NSMutableArray new];
     __block NSMutableDictionary *snippetDictionary = [NSMutableDictionary new];
     
-    [[self sharedQueue] inDatabase:^(FMDatabase *db) {
+    [self.queue inDatabase:^(FMDatabase *db) {
         [db open];
         
-        NSString *formattedSearchText = [self stringWithLastWordHavingPrefixOperatorFromString:searchText];
+        NSString *formattedSearchText = [ZLSearchDatabase stringWithLastWordHavingPrefixOperatorFromString:searchText];
         
         NSString *matchString = [NSString stringWithFormat:@"%@", formattedSearchText];
         int searchWordCount = (int)[matchString componentsSeparatedByString:@" "].count;
@@ -196,10 +199,10 @@ static dispatch_once_t onceToken;
     return [formattedResults copy];
 }
 
-+ (BOOL)resetDatabase
+- (BOOL)resetDatabase
 {
     __block BOOL success = YES;
-    [[self sharedQueue] inDatabase:^(FMDatabase *db) {
+    [self.queue inDatabase:^(FMDatabase *db) {
         [db open];
         NSString *deleteCommand = [NSString stringWithFormat:@"DROP TABLE IF EXISTS %@;"
                                    "DROP TABLE IF EXISTS %@;", kZLSearchDBIndexTableName, kZLSearchDBMetadataTableName];
@@ -212,10 +215,6 @@ static dispatch_once_t onceToken;
         
         [db close];
     }];
-    
-    [_sharedQueue close];
-    _sharedQueue = nil;
-    onceToken = 0;
     
     return success;
 }
@@ -462,11 +461,11 @@ static dispatch_once_t onceToken;
     return newString;
 }
 
-+ (BOOL)doesFileExistWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId
+- (BOOL)doesFileExistWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId
 {
     __block BOOL doesExist = NO;
     
-    [[self sharedQueue] inDatabase:^(FMDatabase *db) {
+    [self.queue inDatabase:^(FMDatabase *db) {
         [db open];
         
         NSString *indexQuery = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ? AND %@ = ?", kZLSearchDBIndexTableName, kZLSearchDBModuleIdKey, kZLSearchDBEntityIdKey];

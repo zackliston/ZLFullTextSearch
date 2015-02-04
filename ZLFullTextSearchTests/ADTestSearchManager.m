@@ -15,6 +15,7 @@
 #import "ZLSearchTaskWorker.h"
 #import "ZLInternalWorkItem.h"
 #import "ZLSearchResult.h"
+#import "FMDB.h"
 
 @interface ADTestSearchManager : XCTestCase
 
@@ -22,9 +23,17 @@
 
 @interface ZLSearchManager (Test)
 
+@property (nonatomic, strong) NSDictionary *searchDatabaseDictionary;
+
 + (void)setupFileDirectories;
 + (NSString *)relativeUrlForFileIndexInfoWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId;
 + (void)teardownForTests;
+
+@end
+
+@interface ZLSearchDatabase (Test)
+
+@property (nonatomic, strong) FMDatabaseQueue *queue;
 
 @end
 
@@ -56,6 +65,101 @@
     
     [mockSearchManager verify];
     [mockSearchManager stopMocking];
+}
+
+#pragma mark - Test searchDatabaseForName
+
+- (void)testSearchDatabaseForNameNoName
+{
+    ZLSearchManager *manager = [ZLSearchManager new];
+    
+    ZLSearchDatabase *database = [manager searchDatabaseForName:nil];
+    XCTAssertNil(database);
+}
+
+- (void)testSearchDatabaseForNameNoMatchingDatabase
+{
+    ZLSearchManager *manager = [ZLSearchManager new];
+    ZLSearchDatabase *database = [ZLSearchDatabase new];
+    manager.searchDatabaseDictionary = @{@"key":database};
+    
+    ZLSearchDatabase *returnedDatabase = [manager searchDatabaseForName:@"n/a"];
+    XCTAssertNil(returnedDatabase);
+}
+
+- (void)testSearchDatabaseForNameMatchingDatabase
+{
+    NSString *name = @"dbName";
+    
+    ZLSearchManager *manager = [ZLSearchManager new];
+    ZLSearchDatabase *nonMatchingDatabase = [ZLSearchDatabase new];
+    ZLSearchDatabase *matchingDatabase = [ZLSearchDatabase new];
+    manager.searchDatabaseDictionary = @{@"key":nonMatchingDatabase, name:matchingDatabase};
+    
+    ZLSearchDatabase *returnedDatabase = [manager searchDatabaseForName:name];
+    XCTAssertNotNil(returnedDatabase);
+    XCTAssertEqualObjects(returnedDatabase, matchingDatabase);
+}
+
+#pragma mark - Test setupSearchDatabaseWithName
+
+- (void)testSetupSearchDatabaseWithNameNoName
+{
+    ZLSearchManager *manager = [ZLSearchManager new];
+    XCTAssertNil(manager.searchDatabaseDictionary);
+    
+    [manager setupSearchDatabaseWithName:nil];
+    
+     XCTAssertNil(manager.searchDatabaseDictionary);
+}
+
+- (void)testSetupSearchDatabaseWithNameSuccess
+{
+    NSString *dbName = @"nameo";
+    ZLSearchManager *manager = [ZLSearchManager new];
+    XCTAssertNil(manager.searchDatabaseDictionary);
+    
+    [manager setupSearchDatabaseWithName:dbName];
+    ZLSearchDatabase *database = [manager.searchDatabaseDictionary objectForKey:dbName];
+    XCTAssertNotNil(database);
+    XCTAssertTrue([database.queue.path rangeOfString:dbName].location != NSNotFound);
+    XCTAssertEqual(manager.searchDatabaseDictionary.allValues.count, 1);
+}
+
+- (void)testSetupSearchDatabaseWithNameDuplicate
+{
+    NSString *dbName = @"nameo";
+    ZLSearchManager *manager = [ZLSearchManager new];
+    XCTAssertNil(manager.searchDatabaseDictionary);
+    
+    [manager setupSearchDatabaseWithName:dbName];
+    [manager setupSearchDatabaseWithName:dbName];
+    
+    ZLSearchDatabase *database = [manager.searchDatabaseDictionary objectForKey:dbName];
+    XCTAssertNotNil(database);
+    XCTAssertTrue([database.queue.path rangeOfString:dbName].location != NSNotFound);
+    XCTAssertEqual(manager.searchDatabaseDictionary.allValues.count, 1);
+}
+
+- (void)testSetupSearchDatabaseWithNameMutliple
+{
+    NSString *dbName = @"nameo";
+    NSString *dbName2 = @"name2";
+    ZLSearchManager *manager = [ZLSearchManager new];
+    XCTAssertNil(manager.searchDatabaseDictionary);
+    
+    [manager setupSearchDatabaseWithName:dbName];
+    [manager setupSearchDatabaseWithName:dbName2];
+    
+    ZLSearchDatabase *database = [manager.searchDatabaseDictionary objectForKey:dbName];
+    XCTAssertNotNil(database);
+    XCTAssertTrue([database.queue.path rangeOfString:dbName].location != NSNotFound);
+    
+    ZLSearchDatabase *database2 = [manager.searchDatabaseDictionary objectForKey:dbName2];
+    XCTAssertNotNil(database2);
+    XCTAssertTrue([database2.queue.path rangeOfString:dbName2].location != NSNotFound);
+    
+    XCTAssertEqual(manager.searchDatabaseDictionary.allValues.count, 2);
 }
 
 #pragma mark - Test setup file directories
@@ -228,6 +332,7 @@
 {
     NSString *url1 = @"url1";
     NSString *url2 = @"url2";
+    NSString *dbName = @"dbName";
     
     NSArray *urlArray = @[url1, url2];
     
@@ -247,6 +352,7 @@
         XCTAssertEqual(task.requiresInternet, NO);
         XCTAssertEqual(task.maxNumberOfRetries, kZLDefaultMaxRetryCount);
         XCTAssertTrue(task.shouldHoldAndRestartAfterMaxRetries);
+        XCTAssertTrue([[task.jsonData objectForKey:kZLSearchTWDatabaseNameKey] isEqualToString:dbName]);
         
         ZLSearchTWActionType taskActionType = [[task.jsonData objectForKey:kZLSearchTWActionTypeKey] integerValue];
         NSArray *receivedUrlArray = [task.jsonData objectForKey:kZLSearchTWFileInfoUrlArrayKey];
@@ -257,7 +363,7 @@
         return YES;
     }]];
     
-    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray];
+    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray searchDatabaseName:dbName];
     XCTAssertTrue(success);
     
     [mockTaskManager verify];
@@ -268,6 +374,7 @@
 {
     NSString *url1 = @"url1";
     NSString *url2 = @"url2";
+    NSString *dbName = @"dbName";
     
     NSArray *urlArray = @[url1, url2];
     
@@ -281,7 +388,7 @@
     
     [[[mockTaskManager expect] andReturnValue:OCMOCK_VALUE(NO)] queueTask:[OCMArg any]];
     
-    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray];
+    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray searchDatabaseName:dbName];
     XCTAssertFalse(success);
     
     [mockTaskManager verify];
@@ -290,7 +397,7 @@
 
 - (void)testIndexFileCollectionEmptyArray
 {
-    
+    NSString *dbName = @"dbName";
     NSArray *urlArray = @[];
     
     ZLSearchManager *searchManager = [ZLSearchManager new];
@@ -303,7 +410,7 @@
     
     [[mockTaskManager reject] queueTask:[OCMArg any]];
     
-    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray];
+    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray searchDatabaseName:dbName];
     XCTAssertFalse(success);
     
     [mockTaskManager verify];
@@ -315,6 +422,7 @@
 - (void)testQueueIndexFileSuccess
 {
     NSString *fileLocation = @"filething";
+    NSString *dbName = @"dbName";
     
     NSString *moduleId = @"moduleIdasdf";
     NSString *fileId = @"idForEntity";
@@ -338,9 +446,9 @@
         XCTAssertTrue([expectedUrl isEqualToString:fileLocation]);
         
         return YES;
-    }]];
+    }] searchDatabaseName:dbName];
     
-    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData];
+    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData searchDatabaseName:dbName];
     
     XCTAssertTrue(success);
     
@@ -352,7 +460,7 @@
 - (void)testQueueIndexFileSaveInfoError
 {
     NSString *fileLocation = @"filething";
-    
+    NSString *dbName = @"dbname";
     NSString *moduleId = @"moduleIdasdf";
     NSString *fileId = @"idForEntity";
     NSString *language = @"english";
@@ -369,9 +477,9 @@
     NSError *fakeError = [NSError errorWithDomain:@"FakeError" code:-123 userInfo:nil];
     
     [[[mockSearchManagerClass expect] andReturn:fileLocation] saveIndexFileInfoToFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData error:[OCMArg setTo:fakeError]];
-    [[mockSearchManager reject] queueIndexFileCollectionWithURLArray:[OCMArg any]];
+    [[mockSearchManager reject] queueIndexFileCollectionWithURLArray:[OCMArg any] searchDatabaseName:dbName];
     
-    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData];
+    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData searchDatabaseName:dbName];
     
     XCTAssertFalse(success);
     
@@ -384,6 +492,7 @@
 {
     NSString *fileLocation = @"filething";
     
+    NSString *dbName = @"dbName";
     NSString *moduleId = @"moduleIdasdf";
     NSString *fileId = @"idForEntity";
     NSString *language = @"english";
@@ -406,9 +515,9 @@
         XCTAssertTrue([expectedUrl isEqualToString:fileLocation]);
         
         return YES;
-    }]];
+    }] searchDatabaseName:dbName];
     
-    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData];
+    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData searchDatabaseName:dbName];
     
     XCTAssertFalse(success);
     
@@ -431,7 +540,7 @@
     [[[mockTaskManagerClass stub] andReturn:mockTaskManager] sharedInstance];
     [[mockTaskManager reject] queueTask:[OCMArg any]];
     
-    BOOL success = [manager queueRemoveFileWithModuleId:nil entityId:@"ent"];
+    BOOL success = [manager queueRemoveFileWithModuleId:nil entityId:@"ent" searchDatabaseName:@"any"];
     
     XCTAssertFalse(success);
     
@@ -450,7 +559,7 @@
     [[[mockTaskManagerClass stub] andReturn:mockTaskManager] sharedInstance];
     [[mockTaskManager reject] queueTask:[OCMArg any]];
     
-    BOOL success = [manager queueRemoveFileWithModuleId:@"mdoul" entityId:nil];
+    BOOL success = [manager queueRemoveFileWithModuleId:@"mdoul" entityId:nil searchDatabaseName:@"any"];
     
     XCTAssertFalse(success);
     
@@ -461,6 +570,7 @@
 - (void)testQueueRemoveFile
 {
     ZLSearchManager *searchManager = [ZLSearchManager new];
+    NSString *dbName = @"dbName";
     
     ZLTaskManager  *taskManager = [[ZLTaskManager  alloc] init];
     id mockTaskManager = [OCMockObject partialMockForObject:taskManager];
@@ -481,10 +591,11 @@
         XCTAssertEqual(task.maxNumberOfRetries, kZLDefaultMaxRetryCount);
         XCTAssertTrue(task.shouldHoldAndRestartAfterMaxRetries);
         
+         XCTAssertTrue([[task.jsonData objectForKey:kZLSearchTWDatabaseNameKey] isEqualToString:dbName]);
         ZLSearchTWActionType taskActionType = [[task.jsonData objectForKey:kZLSearchTWActionTypeKey] integerValue];
         NSString *taskModuleId = [task.jsonData objectForKey:kZLSearchTWModuleIdKey];
         NSString *taskEntityId = [task.jsonData objectForKey:kZLSearchTWEntityIdKey];
- 
+        
         XCTAssertEqual(taskActionType, ZLSearchTWActionTypeRemoveFileFromIndex);
         XCTAssertTrue([taskModuleId isEqualToString:moduleId]);
         XCTAssertTrue([taskEntityId isEqualToString:entityId]);
@@ -492,7 +603,7 @@
         return YES;
     }]];
     
-    BOOL success = [searchManager queueRemoveFileWithModuleId:moduleId entityId:entityId];
+    BOOL success = [searchManager queueRemoveFileWithModuleId:moduleId entityId:entityId searchDatabaseName:dbName];
     
     XCTAssertTrue(success);
     [mockTaskManager verify];
@@ -514,7 +625,7 @@
     
     [[[mockTaskManager expect] andReturnValue:OCMOCK_VALUE(NO)] queueTask:[OCMArg any]];
     
-    BOOL success = [searchManager queueRemoveFileWithModuleId:moduleId entityId:entityId];
+    BOOL success = [searchManager queueRemoveFileWithModuleId:moduleId entityId:entityId searchDatabaseName:@"any"];
     
     XCTAssertFalse(success);
     [mockTaskManager verify];
@@ -525,8 +636,9 @@
 
 - (void)testResetSearchDatabaseSuccess
 {
+    NSString *dbName = @"dbName";
     ZLSearchManager *manager = [ZLSearchManager new];
-    
+   
     ZLTaskManager  *taskManager = [[ZLTaskManager  alloc] init];
     id mockTaskManager = [OCMockObject partialMockForObject:taskManager];
     
@@ -538,20 +650,24 @@
     [[mockTaskManager expect] removeTasksOfType:kTaskTypeSearch];
     [[mockTaskManager expect] resume];
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    ZLSearchDatabase *database = [ZLSearchDatabase new];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:database];
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(YES)] resetDatabase];
     
-    BOOL success = [manager resetSearchDatabase];
+    id mockSearchManager = [OCMockObject partialMockForObject:manager];
+    [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];
+    
+    BOOL success = [manager resetSearchDatabaseWithName:dbName];
     XCTAssertTrue(success);
     
     [mockSearchDatabase verify];
-    [mockSearchDatabase stopMocking];
     [mockTaskManager verify];
     [mockTaskManagerClass stopMocking];
 }
 
 - (void)testResetSearchDatabaseFailure
 {
+    NSString *dbName = @"dbNaee";
     ZLSearchManager *manager = [ZLSearchManager new];
     
     ZLTaskManager  *taskManager = [[ZLTaskManager  alloc] init];
@@ -565,10 +681,15 @@
     [[mockTaskManager expect] removeTasksOfType:kTaskTypeSearch];
     [[mockTaskManager expect] resume];
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    ZLSearchDatabase *database = [ZLSearchDatabase new];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:database];
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(NO)] resetDatabase];
     
-    BOOL success = [manager resetSearchDatabase];
+    id mockSearchManager = [OCMockObject partialMockForObject:manager];
+    [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];
+    
+    BOOL success = [manager resetSearchDatabaseWithName:dbName];
+    
     XCTAssertFalse(success);
     
     [mockSearchDatabase verify];
@@ -612,6 +733,8 @@
 
 - (void)testSearchFilesSuccess
 {
+    NSString *dbName = @"dbNamee";
+    
     ZLSearchManager *manager = [ZLSearchManager new];
     NSString *searchText = @"sear";
     NSString *formattedSearchText = @"format";
@@ -623,10 +746,13 @@
     NSUInteger limit = 3;
     NSUInteger offset = 1;
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
-    [[[mockSearchDatabase expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
+    ZLSearchDatabase *database = [ZLSearchDatabase new];                 
+    id mockSearchDatabase = [OCMockObject partialMockForObject:database];
     [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg setTo:suggestions] error:[OCMArg anyObjectRef]];
     
+    id mockSearchManager = [OCMockObject partialMockForObject:manager];
+    [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];
+
     id mockSearchBackupDelegate = [OCMockObject mockForProtocol:@protocol(ZLSearchBackupProtocol)];
     [[mockSearchBackupDelegate reject] backupSearchResultsForSearchText:formattedSearchText limit:limit offset:offset];
     manager.backupSearchDelegate = mockSearchBackupDelegate;
@@ -641,7 +767,11 @@
         [completionBlockExpectation fulfill];
     };
     
-    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock];
+    
+    id mockSearchDatabaseClass = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    [[[mockSearchDatabaseClass expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
+    
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock searchDatabaseName:dbName];
     XCTAssertTrue(success);
     
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
@@ -649,11 +779,14 @@
     [mockSearchBackupDelegate verify];
     [mockSearchBackupDelegate stopMocking];
     [mockSearchDatabase verify];
-    [mockSearchDatabase stopMocking];
+    [mockSearchDatabaseClass verify];
+    [mockSearchDatabaseClass stopMocking];
 }
 
 - (void)testSearchFilesZeroResults
 {
+    NSString *dbName = @"dbName";
+    
     ZLSearchManager *manager = [ZLSearchManager new];
     NSString *searchText = @"sear";
     NSString *formattedSearchText = @"format";
@@ -665,9 +798,13 @@
     NSUInteger limit = 3;
     NSUInteger offset = 1;
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
-    [[[mockSearchDatabase expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
+    ZLSearchDatabase *database = [ZLSearchDatabase new];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:database];
     [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
+    
+    id mockSearchManager = [OCMockObject partialMockForObject:manager];
+    [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];
+   
     
     id mockSearchBackupDelegate = [OCMockObject mockForProtocol:@protocol(ZLSearchBackupProtocol)];
     [[[mockSearchBackupDelegate expect] andReturn:backupResults] backupSearchResultsForSearchText:formattedSearchText limit:limit offset:offset];
@@ -681,7 +818,10 @@
         [completionBlockExpectation fulfill];
     };
     
-    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock];
+    id mockSearchDatabaseClass = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    [[[mockSearchDatabaseClass expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
+
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock searchDatabaseName:dbName];
     XCTAssertTrue(success);
     
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
@@ -689,11 +829,13 @@
     [mockSearchBackupDelegate verify];
     [mockSearchBackupDelegate stopMocking];
     [mockSearchDatabase verify];
-    [mockSearchDatabase stopMocking];
+    [mockSearchDatabaseClass verify];
+    [mockSearchDatabaseClass stopMocking];
 }
 
 - (void)testSearchFilesError
 {
+    NSString *dbName = @"dbName";
     ZLSearchManager *manager = [ZLSearchManager new];
     NSString *searchText = @"sear";
     NSString *formattedSearchText = @"format";
@@ -704,10 +846,15 @@
     NSUInteger offset = 1;
     
     NSError *fakeError = [NSError errorWithDomain:@"FakeError" code:-123 userInfo:nil];
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
-    [[[mockSearchDatabase expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
-    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg setTo:fakeError]];
     
+    
+    ZLSearchDatabase *database = [ZLSearchDatabase new];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:database];
+    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg setTo:fakeError]];
+   
+    id mockSearchManager = [OCMockObject partialMockForObject:manager];
+    [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];
+
     XCTestExpectation *completionBlockExpectation = [self expectationWithDescription:@"completion block expectation"];
     ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
         XCTAssertTrue([NSThread isMainThread]);
@@ -717,30 +864,40 @@
         [completionBlockExpectation fulfill];
     };
     
-    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock];
+    id mockSearchDatabaseClass = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    [[[mockSearchDatabaseClass expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
+    
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock searchDatabaseName:dbName];
     XCTAssertTrue(success);
     
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
     
     [mockSearchDatabase verify];
-    [mockSearchDatabase stopMocking];
+    [mockSearchDatabaseClass verify];
+    [mockSearchDatabaseClass stopMocking];
 }
 
 - (void)testSearchFilesZeroLimit
 {
+    NSString *dbName = @"dbNamee";
     ZLSearchManager *manager = [ZLSearchManager new];
     NSString *searchText = @"sear";
     NSUInteger limit = 0;
     NSUInteger offset = 11;
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    ZLSearchDatabase *database = [ZLSearchDatabase new];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:database];
     [[mockSearchDatabase reject] searchFilesWithSearchText:[OCMArg any] limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
+    
+    id mockSearchManager = [OCMockObject partialMockForObject:manager];
+    [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];
+    
     
     ZLSearchCompletionBlock completionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
         XCTFail(@"The completion block should not execute");
     };
     
-    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock];
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset completionBlock:completionBlock searchDatabaseName:dbName];
     XCTAssertFalse(success);
     
     [mockSearchDatabase verify];

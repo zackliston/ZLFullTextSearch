@@ -37,6 +37,7 @@ FOUNDATION_EXPORT NSString *const kZLFileMetadataFileType;
 FOUNDATION_EXPORT NSString *const kZLFileMetadataImageURI;
 
 @class ZLTask;
+@class ZLSearchDatabase;
 @interface ZLSearchManager : ZLManager
 
 @property (nonatomic, weak) id<ZLSearchResultIsFavoritedProtocol>searchResultFavoriteDelegate;
@@ -44,13 +45,16 @@ FOUNDATION_EXPORT NSString *const kZLFileMetadataImageURI;
 @property (nonatomic, weak) id<ZLSearchTaskWorkerProtocol>searchTaskWorkerDelegate;
 
 + (ZLSearchManager *)sharedInstance;
+- (void)setupSearchDatabaseWithName:(NSString *)searchDatabaseName;
+- (ZLSearchDatabase *)searchDatabaseForName:(NSString *)searchDatabaseName;
+
 + (NSString *)saveIndexFileInfoToFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata error:(NSError **)error;
 
-- (BOOL)queueIndexFileCollectionWithURLArray:(NSArray *)urlArray;
-- (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata;
-- (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId;
-- (BOOL)resetSearchDatabase;
-- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset completionBlock:(ZLSearchCompletionBlock)completionBlock;
+- (BOOL)queueIndexFileCollectionWithURLArray:(NSArray *)urlArray searchDatabaseName:(NSString *)searchDatabaseName;
+- (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata searchDatabaseName:(NSString *)searchDatabaseName;
+- (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId searchDatabaseName:(NSString *)searchDatabaseName;
+- (BOOL)resetSearchDatabaseWithName:(NSString *)searchDatabaseName;
+- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset completionBlock:(ZLSearchCompletionBlock)completionBlock searchDatabaseName:(NSString *)searchDatabaseName;
 
 + (NSString *)absoluteUrlForFileInfoFromRelativeUrl:(NSString *)relativeUrl;
 

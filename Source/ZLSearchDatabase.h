@@ -10,11 +10,13 @@
 
 @interface ZLSearchDatabase : NSObject
 
-+ (BOOL)indexFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata;
-+ (BOOL)removeFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId;
-+ (BOOL)resetDatabase;
+- (id)initWithDatabaseName:(NSString *)databaseName;
 
-+ (NSArray *)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchSuggestions:(NSArray **)searchSuggestions error:(NSError **)error;
+- (BOOL)indexFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata;
+- (BOOL)removeFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId;
+- (BOOL)resetDatabase;
+
+- (NSArray *)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchSuggestions:(NSArray **)searchSuggestions error:(NSError **)error;
 
 + (NSString *)searchableStringFromString:(NSString *)oldString;
 

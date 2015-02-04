@@ -29,9 +29,15 @@
 
 @interface ZLSearchDatabase (Test)
 
-+ (FMDatabaseQueue *)sharedQueue;
+@property (nonatomic, strong) FMDatabaseQueue *queue;
 + (NSString *)stringWithLastWordHavingPrefixOperatorFromString:(NSString *)oldString;
-+ (BOOL)doesFileExistWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId;
+- (BOOL)doesFileExistWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId;
+
+@end
+
+@interface ADTestSearchDatabase ()
+
+@property (nonatomic, strong) ZLSearchDatabase *database;
 
 @end
 
@@ -39,7 +45,7 @@
 
 - (void)setUp {
     [super setUp];
-    [ZLSearchDatabase resetDatabase];
+    self.database = [[ZLSearchDatabase alloc] initWithDatabaseName:@"testDB"];
 
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
@@ -47,19 +53,20 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
-    [ZLSearchDatabase resetDatabase];
+    [self.database resetDatabase];
+    self.database = nil;
 }
 
 #pragma mark - Test Initialize/SharedQueue
 
 - (void)testGettingInitialSharedQueue
 {
-    FMDatabaseQueue *queue = [ZLSearchDatabase sharedQueue];
-    
+    FMDatabaseQueue *queue = self.database.queue;
+
     XCTAssertNotNil(queue, @"Shared queue should not be nil after sharedQueue is called");
     
     NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
-    NSString *path = [[NSString alloc] initWithString:[cachesDirectory stringByAppendingPathComponent:kZLSearchDatabaseLocation]];
+    NSString *path = [[NSString alloc] initWithString:[cachesDirectory stringByAppendingPathComponent:@"testDB"]];
     
     XCTAssertTrue([queue.path isEqualToString:path], @"Queue database path %@ should be the same as the specified path %@", queue.path, path);
     
@@ -100,14 +107,6 @@
     }];
 }
 
-- (void)testGettingNonInitialSharedQueue
-{
-    FMDatabaseQueue *queue = [ZLSearchDatabase sharedQueue];
-    FMDatabaseQueue *secondQueue = [ZLSearchDatabase sharedQueue];
-    
-    XCTAssertEqual(queue, secondQueue, @"After the sharedQueue is initialized it should return the same one instead of reinstiating.");
-}
-
 #pragma mark - Test indexFile
 
 - (void)testIndexFileAllWeightsAllMetadata
@@ -131,15 +130,15 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight0:weightZero, kZLSearchableStringWeight1:weightOne, kZLSearchableStringWeight2:weightTwo, kZLSearchableStringWeight3:weightThree, kZLSearchableStringWeight4:weightFour};
     NSDictionary *searchMetadata = @{kZLFileMetadataTitle:title, kZLFileMetadataSubtitle:subtitle, kZLFileMetadataURI:uri, kZLFileMetadataFileType:type, kZLFileMetadataImageURI:imageUri};
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:self.database];
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(NO) ] doesFileExistWithModuleId:moduleId entityId:entityId];
     [[mockSearchDatabase reject] removeFileWithModuleId:[OCMArg any] entityId:[OCMArg any]];
     
-    BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL success = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
     XCTAssertTrue(success);
     
-    FMDatabaseQueue *queue = [ZLSearchDatabase sharedQueue];
+    FMDatabaseQueue *queue = self.database.queue;
     
     [queue inDatabase:^(FMDatabase *db) {
         [db open];
@@ -185,6 +184,7 @@
         [db closeOpenResultSets];
         [db close];
     }];
+    
     [mockSearchDatabase verify];
     [mockSearchDatabase stopMocking];
 }
@@ -208,15 +208,15 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight0:weightZero, kZLSearchableStringWeight2:weightTwo, kZLSearchableStringWeight3:weightThree};
     NSDictionary *searchMetadata = @{kZLFileMetadataTitle:title, kZLFileMetadataSubtitle:subtitle, kZLFileMetadataURI:uri, kZLFileMetadataFileType:type, kZLFileMetadataImageURI:imageUri};
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:self.database];
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(NO) ] doesFileExistWithModuleId:moduleId entityId:entityId];
      [[mockSearchDatabase reject] removeFileWithModuleId:[OCMArg any] entityId:[OCMArg any]];
     
-    BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL success = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
     XCTAssertTrue(success);
     
-    FMDatabaseQueue *queue = [ZLSearchDatabase sharedQueue];
+    FMDatabaseQueue *queue = self.database.queue;
     
     [queue inDatabase:^(FMDatabase *db) {
         [db open];
@@ -281,15 +281,15 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight0:weightZero, kZLSearchableStringWeight1:weightOne, kZLSearchableStringWeight2:weightTwo, kZLSearchableStringWeight3:weightThree, kZLSearchableStringWeight4:weightFour};
     NSDictionary *searchMetadata = nil;
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:self.database];
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(NO) ] doesFileExistWithModuleId:moduleId entityId:entityId];
      [[mockSearchDatabase reject] removeFileWithModuleId:[OCMArg any] entityId:[OCMArg any]];
     
-    BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL success = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
     XCTAssertTrue(success);
     
-    FMDatabaseQueue *queue = [ZLSearchDatabase sharedQueue];
+    FMDatabaseQueue *queue = self.database.queue;
     
     [queue inDatabase:^(FMDatabase *db) {
         [db open];
@@ -350,15 +350,15 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight1:weightOne};
     NSDictionary *searchMetadata = nil;
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:self.database];
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(NO) ] doesFileExistWithModuleId:moduleId entityId:entityId];
      [[mockSearchDatabase reject] removeFileWithModuleId:[OCMArg any] entityId:[OCMArg any]];
     
-    BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL success = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
     XCTAssertTrue(success);
     
-    FMDatabaseQueue *queue = [ZLSearchDatabase sharedQueue];
+    FMDatabaseQueue *queue = self.database.queue;
     
     [queue inDatabase:^(FMDatabase *db) {
         [db open];
@@ -418,10 +418,10 @@
     NSDictionary *searchableStrings = @{@"otherKey":weightOne};
     NSDictionary *searchMetadata = nil;
     
-    id mockQueue = [OCMockObject partialMockForObject:[ZLSearchDatabase sharedQueue]];
+    id mockQueue = [OCMockObject partialMockForObject:self.database.queue];
     [[mockQueue reject] inTransaction:[OCMArg any]];
     [[mockQueue reject] inDatabase:[OCMArg any]];
-    BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL success = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
     [mockQueue verify];
     [mockQueue stopMocking];
@@ -439,10 +439,10 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight1:weightOne};
     NSDictionary *searchMetadata = nil;
     
-    id mockQueue = [OCMockObject partialMockForObject:[ZLSearchDatabase sharedQueue]];
+    id mockQueue = [OCMockObject partialMockForObject:self.database.queue];
     [[mockQueue reject] inTransaction:[OCMArg any]];
     [[mockQueue reject] inDatabase:[OCMArg any]];
-    BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL success = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
     [mockQueue verify];
     [mockQueue stopMocking];
@@ -460,10 +460,10 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight1:weightOne};
     NSDictionary *searchMetadata = nil;
     
-    id mockQueue = [OCMockObject partialMockForObject:[ZLSearchDatabase sharedQueue]];
+    id mockQueue = [OCMockObject partialMockForObject:self.database.queue];
     [[mockQueue reject] inTransaction:[OCMArg any]];
     [[mockQueue reject] inDatabase:[OCMArg any]];
-    BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL success = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
     [mockQueue verify];
     [mockQueue stopMocking];
@@ -481,10 +481,10 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight1:weightOne};
     NSDictionary *searchMetadata = nil;
     
-    id mockQueue = [OCMockObject partialMockForObject:[ZLSearchDatabase sharedQueue]];
+    id mockQueue = [OCMockObject partialMockForObject:self.database.queue];
     [[mockQueue reject] inTransaction:[OCMArg any]];
     [[mockQueue reject] inDatabase:[OCMArg any]];
-    BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL success = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
     [mockQueue verify];
     [mockQueue stopMocking];
@@ -512,16 +512,16 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight0:weightZero, kZLSearchableStringWeight1:weightOne, kZLSearchableStringWeight2:weightTwo, kZLSearchableStringWeight3:weightThree, kZLSearchableStringWeight4:weightFour};
     NSDictionary *searchMetadata = @{kZLFileMetadataTitle:title, kZLFileMetadataSubtitle:subtitle, kZLFileMetadataURI:uri, kZLFileMetadataFileType:type, kZLFileMetadataImageURI:imageUri};
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:self.database];
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(YES)] doesFileExistWithModuleId:moduleId entityId:entityId];
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(YES)] removeFileWithModuleId:moduleId entityId:entityId];
     
     
-    BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL success = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
     XCTAssertTrue(success);
     
-    FMDatabaseQueue *queue = [ZLSearchDatabase sharedQueue];
+    FMDatabaseQueue *queue = self.database.queue;
     
     [queue inDatabase:^(FMDatabase *db) {
         [db open];
@@ -594,13 +594,13 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight0:weightZero, kZLSearchableStringWeight1:weightOne, kZLSearchableStringWeight2:weightTwo, kZLSearchableStringWeight3:weightThree, kZLSearchableStringWeight4:weightFour};
     NSDictionary *searchMetadata = @{kZLFileMetadataTitle:title, kZLFileMetadataSubtitle:subtitle, kZLFileMetadataURI:uri, kZLFileMetadataFileType:type, kZLFileMetadataImageURI:imageUri};
 
-    BOOL addSuccess = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL addSuccess = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     XCTAssertTrue(addSuccess);
     
-    BOOL removeSuccess = [ZLSearchDatabase removeFileWithModuleId:moduleId entityId:entityId];
+    BOOL removeSuccess = [self.database removeFileWithModuleId:moduleId entityId:entityId];
     XCTAssertTrue(removeSuccess);
 
-    FMDatabaseQueue *queue = [ZLSearchDatabase sharedQueue];
+    FMDatabaseQueue *queue = self.database.queue;
     
     [queue inDatabase:^(FMDatabase *db) {
         [db open];
@@ -647,15 +647,15 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight0:weightZero, kZLSearchableStringWeight1:weightOne, kZLSearchableStringWeight2:weightTwo, kZLSearchableStringWeight3:weightThree, kZLSearchableStringWeight4:weightFour};
     NSDictionary *searchMetadata = @{kZLFileMetadataTitle:title, kZLFileMetadataSubtitle:subtitle, kZLFileMetadataURI:uri, kZLFileMetadataFileType:type, kZLFileMetadataImageURI:imageUri};
     
-    BOOL addSuccess = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL addSuccess = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     XCTAssertTrue(addSuccess);
     
-    id mockQueue = [OCMockObject partialMockForObject:[ZLSearchDatabase sharedQueue]];
+    id mockQueue = [OCMockObject partialMockForObject:self.database.queue];
     [[mockQueue reject] inTransaction:[OCMArg any]];
     [[mockQueue reject] inDatabase:[OCMArg any]];
     
     
-    BOOL removeSuccess = [ZLSearchDatabase removeFileWithModuleId:nil entityId:entityId];
+    BOOL removeSuccess = [self.database removeFileWithModuleId:nil entityId:entityId];
     XCTAssertFalse(removeSuccess);
     
     [mockQueue verify];
@@ -683,15 +683,15 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight0:weightZero, kZLSearchableStringWeight1:weightOne, kZLSearchableStringWeight2:weightTwo, kZLSearchableStringWeight3:weightThree, kZLSearchableStringWeight4:weightFour};
     NSDictionary *searchMetadata = @{kZLFileMetadataTitle:title, kZLFileMetadataSubtitle:subtitle, kZLFileMetadataURI:uri, kZLFileMetadataFileType:type, kZLFileMetadataImageURI:imageUri};
     
-    BOOL addSuccess = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    BOOL addSuccess = [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     XCTAssertTrue(addSuccess);
     
-    id mockQueue = [OCMockObject partialMockForObject:[ZLSearchDatabase sharedQueue]];
+    id mockQueue = [OCMockObject partialMockForObject:self.database.queue];
     [[mockQueue reject] inTransaction:[OCMArg any]];
     [[mockQueue reject] inDatabase:[OCMArg any]];
     
     
-    BOOL removeSuccess = [ZLSearchDatabase removeFileWithModuleId:moduleId entityId:nil];
+    BOOL removeSuccess = [self.database removeFileWithModuleId:moduleId entityId:nil];
     XCTAssertFalse(removeSuccess);
     
     [mockQueue verify];
@@ -729,15 +729,15 @@
     NSDictionary *search5 = @{kZLSearchableStringWeight0:searchableString};
     NSDictionary *search6 = @{kZLSearchableStringWeight3:@"no mathc"};
     
-    [ZLSearchDatabase indexFileWithModuleId:moduleId1 entityId:entityId1 language:language boost:boost searchableStrings:search1 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId2 entityId:entityId2 language:language boost:boost searchableStrings:search2 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId3 entityId:entityId3 language:language boost:boost searchableStrings:search3 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId4 entityId:entityId4 language:language boost:boost searchableStrings:search4 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId5 entityId:entityId5 language:language boost:boost searchableStrings:search5 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId6 entityId:entityId6 language:language boost:boost searchableStrings:search6 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId1 entityId:entityId1 language:language boost:boost searchableStrings:search1 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId2 entityId:entityId2 language:language boost:boost searchableStrings:search2 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId3 entityId:entityId3 language:language boost:boost searchableStrings:search3 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId4 entityId:entityId4 language:language boost:boost searchableStrings:search4 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId5 entityId:entityId5 language:language boost:boost searchableStrings:search5 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId6 entityId:entityId6 language:language boost:boost searchableStrings:search6 fileMetadata:nil];
 
     NSError *error;
-    NSArray *results = [ZLSearchDatabase searchFilesWithSearchText:@"hello" limit:10 offset:0 searchSuggestions:nil error:&error];
+    NSArray *results = [self.database searchFilesWithSearchText:@"hello" limit:10 offset:0 searchSuggestions:nil error:&error];
     
     XCTAssertNil(error);
     XCTAssertEqual(results.count, 5);
@@ -770,11 +770,11 @@
     NSDictionary *meta1 = @{kZLFileMetadataTitle:title, kZLFileMetadataSubtitle:subtitle, kZLFileMetadataFileType:type, kZLFileMetadataURI:uri, kZLFileMetadataImageURI:imageUri};
     NSDictionary *meta2 = @{kZLFileMetadataTitle:@"wrongTitle", kZLFileMetadataSubtitle:@"wrongSubtitle", kZLFileMetadataFileType:@"wrongType", kZLFileMetadataURI:@"wrongURI", kZLFileMetadataImageURI:@"wrongImageUri"};
     
-    [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId1 language:language boost:boost searchableStrings:search1 fileMetadata:meta1];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId2 language:language boost:boost searchableStrings:search2 fileMetadata:meta2];
+    [self.database indexFileWithModuleId:moduleId entityId:entityId1 language:language boost:boost searchableStrings:search1 fileMetadata:meta1];
+    [self.database indexFileWithModuleId:moduleId entityId:entityId2 language:language boost:boost searchableStrings:search2 fileMetadata:meta2];
     
     NSError *error;
-    NSArray *results = [ZLSearchDatabase searchFilesWithSearchText:@"hello w" limit:10 offset:0 searchSuggestions:nil error:&error];
+    NSArray *results = [self.database searchFilesWithSearchText:@"hello w" limit:10 offset:0 searchSuggestions:nil error:&error];
     
     XCTAssertNil(error);
     XCTAssertEqual(results.count, 1);
@@ -810,16 +810,16 @@
     NSDictionary *search5 = @{kZLSearchableStringWeight4:searchableString};
     NSDictionary *search6 = @{kZLSearchableStringWeight3:@"nope"};
     
-    [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId1 language:language boost:boost searchableStrings:search1 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId2 language:language boost:boost searchableStrings:search2 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId3 language:language boost:boost searchableStrings:search3 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId4 language:language boost:boost searchableStrings:search4 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId5 language:language boost:boost searchableStrings:search5 fileMetadata:nil];
-    [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId6 language:language boost:boost searchableStrings:search6 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId entityId:entityId1 language:language boost:boost searchableStrings:search1 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId entityId:entityId2 language:language boost:boost searchableStrings:search2 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId entityId:entityId3 language:language boost:boost searchableStrings:search3 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId entityId:entityId4 language:language boost:boost searchableStrings:search4 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId entityId:entityId5 language:language boost:boost searchableStrings:search5 fileMetadata:nil];
+    [self.database indexFileWithModuleId:moduleId entityId:entityId6 language:language boost:boost searchableStrings:search6 fileMetadata:nil];
     
     NSError *error;
     NSUInteger limit = 2;
-    NSArray *results = [ZLSearchDatabase searchFilesWithSearchText:@"hello w" limit:limit offset:0 searchSuggestions:nil error:&error];
+    NSArray *results = [self.database searchFilesWithSearchText:@"hello w" limit:limit offset:0 searchSuggestions:nil error:&error];
     
     XCTAssertNil(error);
     XCTAssertEqual(results.count, limit);
@@ -861,9 +861,9 @@
     NSDictionary *searchableStrings = @{kZLSearchableStringWeight0:weightZero, kZLSearchableStringWeight1:weightOne, kZLSearchableStringWeight2:weightTwo, kZLSearchableStringWeight3:weightThree, kZLSearchableStringWeight4:weightFour};
     NSDictionary *searchMetadata = @{kZLFileMetadataTitle:title, kZLFileMetadataSubtitle:subtitle, kZLFileMetadataURI:uri, kZLFileMetadataFileType:type, kZLFileMetadataImageURI:imageUri};
     
-    [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
+    [self.database indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:searchableStrings fileMetadata:searchMetadata];
     
-    BOOL doesExist = [ZLSearchDatabase doesFileExistWithModuleId:moduleId entityId:entityId];
+    BOOL doesExist = [self.database doesFileExistWithModuleId:moduleId entityId:entityId];
     XCTAssertTrue(doesExist);
 }
 
@@ -872,7 +872,7 @@
     NSString *moduleId = @"moduleIdTestOne";
     NSString *entityId = @"entityIdTestOne";
     
-    BOOL doesExist = [ZLSearchDatabase doesFileExistWithModuleId:moduleId entityId:entityId];
+    BOOL doesExist = [self.database doesFileExistWithModuleId:moduleId entityId:entityId];
     XCTAssertFalse(doesExist);
 }
 

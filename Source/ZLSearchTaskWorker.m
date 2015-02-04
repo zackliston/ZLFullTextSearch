@@ -21,12 +21,14 @@ NSString *const kZLSearchTWLanguageKey = @"language";
 NSString *const kZLSearchTWBoostKey = @"boost";
 NSString *const kZLSearchTWSearchableStringsKey = @"searchableStrings";
 NSString *const kZLSearchTWFileMetadataKey = @"fileMetadata";
+NSString *const kZLSearchTWDatabaseNameKey = @"databaseName";
 
 @interface ZLSearchTaskWorker ()
 
 @property (nonatomic, assign) ZLSearchTWActionType type;
 @property (nonatomic, strong) NSArray *urlArray;
 @property (nonatomic, strong) NSMutableArray *succeededIndexFileInfoDictionaries;
+@property (nonatomic, strong) ZLSearchDatabase *searchDatabase;
 
 @end
 
@@ -49,6 +51,9 @@ NSString *const kZLSearchTWFileMetadataKey = @"fileMetadata";
     [super setupWithWorkItem:workItem];
     self.type = [[workItem.jsonData objectForKey:kZLSearchTWActionTypeKey] integerValue];
     self.urlArray = [workItem.jsonData objectForKey:kZLSearchTWFileInfoUrlArrayKey];
+    
+    NSString *searchDatabaseName = [workItem.jsonData objectForKey:kZLSearchTWDatabaseNameKey];
+    self.searchDatabase = [[ZLSearchManager sharedInstance] searchDatabaseForName:searchDatabaseName];
 }
 
 #pragma mark - Main
@@ -66,7 +71,7 @@ NSString *const kZLSearchTWFileMetadataKey = @"fileMetadata";
         NSString *moduleId = [self.workItem.jsonData objectForKey:kZLSearchTWModuleIdKey];
         NSString *fileId = [self.workItem.jsonData objectForKey:kZLSearchTWEntityIdKey];
         
-        success = [ZLSearchDatabase removeFileWithModuleId:moduleId entityId:fileId];
+        success = [self.searchDatabase removeFileWithModuleId:moduleId entityId:fileId];
         
     } else if (self.type == ZLSearchTWActionTypeIndexFile) {
         for (NSString *url in self.urlArray) {
@@ -112,7 +117,7 @@ NSString *const kZLSearchTWFileMetadataKey = @"fileMetadata";
         if (self.cancelled) {
             return NO;
         }
-        BOOL success = [ZLSearchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:preparedSearchableStrings fileMetadata:metadata];
+        BOOL success = [self.searchDatabase indexFileWithModuleId:moduleId entityId:entityId language:language boost:boost searchableStrings:preparedSearchableStrings fileMetadata:metadata];
         if (success) {
             NSDictionary *fileInfo = @{kZLSearchTWModuleIdKey:moduleId, kZLSearchTWEntityIdKey:entityId, @"url":url};
             [self.succeededIndexFileInfoDictionaries addObject:fileInfo];

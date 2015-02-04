@@ -32,6 +32,11 @@ NSString *const kZLFileMetadataURI = @"uri";
 NSString *const kZLFileMetadataFileType = @"filetype";
 NSString *const kZLFileMetadataImageURI = @"imageuri";
 
+@interface ZLSearchManager ()
+
+@property (nonatomic, strong) NSDictionary *searchDatabaseDictionary;
+
+@end
 
 @implementation ZLSearchManager
 
@@ -52,7 +57,38 @@ static dispatch_once_t onceToken;
     return _sharedInstance;
 }
 
+#pragma mark - Getters/Setters
+
+- (ZLSearchDatabase *)searchDatabaseForName:(NSString *)searchDatabaseName
+{
+    if (!searchDatabaseName.length) {
+        NSLog(@"Cannot get a searchDatabase with a nil name");
+        return nil;
+    }
+    return [self.searchDatabaseDictionary objectForKey:searchDatabaseName];
+}
+
 #pragma mark - Setup
+
+- (void)setupSearchDatabaseWithName:(NSString *)searchDatabaseName
+{
+    if (!searchDatabaseName.length) {
+        NSLog(@"Cannot setup a searchDatabase with a nil name");
+        return;
+    }
+    
+    if (![self.searchDatabaseDictionary objectForKey:searchDatabaseName]) {
+        ZLSearchDatabase *database = [[ZLSearchDatabase alloc] initWithDatabaseName:searchDatabaseName];
+        if (self.searchDatabaseDictionary) {
+            NSMutableDictionary *tempDictionary = [self.searchDatabaseDictionary mutableCopy];
+            [tempDictionary setObject:database forKey:searchDatabaseName];
+            self.searchDatabaseDictionary = [tempDictionary copy];
+        } else {
+            self.searchDatabaseDictionary = @{searchDatabaseName:database};
+        }
+    }
+}
+
 
 + (void)setupFileDirectories
 {
@@ -117,14 +153,18 @@ static dispatch_once_t onceToken;
     return relativeUrl;
 }
 
-- (BOOL)queueIndexFileCollectionWithURLArray:(NSArray *)urlArray
+- (BOOL)queueIndexFileCollectionWithURLArray:(NSArray *)urlArray searchDatabaseName:(NSString *)searchDatabaseName
 {
     if (!urlArray.count) {
         NSLog(@"Error in queueIndexFileCollection in searchManager. Url array contained no urls.");
         return NO;
     }
+    if (!searchDatabaseName.length) {
+        NSLog(@"You must provide a searchDatabase name in queueIndexFile...");
+        return NO;
+    }
     
-    NSDictionary *jsonData = @{kZLSearchTWFileInfoUrlArrayKey:urlArray, kZLSearchTWActionTypeKey:[NSNumber numberWithInteger:ZLSearchTWActionTypeIndexFile]};
+    NSDictionary *jsonData = @{kZLSearchTWFileInfoUrlArrayKey:urlArray, kZLSearchTWActionTypeKey:[NSNumber numberWithInteger:ZLSearchTWActionTypeIndexFile], kZLSearchTWDatabaseNameKey:searchDatabaseName};
     ZLTask *task = [[ZLTask alloc] initWithTaskType:kTaskTypeSearch jsonData:jsonData];
     task.majorPriority = kMajorPrioritySearch;
     task.minorPriority = kMinorPrioritySearchIndexFile;
@@ -135,7 +175,7 @@ static dispatch_once_t onceToken;
     return [[ZLTaskManager sharedInstance] queueTask:task];
 }
 
-- (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata
+- (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata searchDatabaseName:(NSString *)searchDatabaseName
 {
     NSError *saveError;
     NSString *fileLocation = [ZLSearchManager saveIndexFileInfoToFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetadata error:&saveError];
@@ -144,10 +184,10 @@ static dispatch_once_t onceToken;
         return NO;
     }
     
-    return [self queueIndexFileCollectionWithURLArray:@[fileLocation]];
+    return [self queueIndexFileCollectionWithURLArray:@[fileLocation] searchDatabaseName:searchDatabaseName];
 }
 
-- (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId
+- (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId searchDatabaseName:(NSString *)searchDatabaseName
 {
     BOOL success = YES;
     
@@ -156,7 +196,13 @@ static dispatch_once_t onceToken;
         return success;
     }
     
-    NSDictionary *taskJsonData = @{kZLSearchTWModuleIdKey:moduleId, kZLSearchTWEntityIdKey:entityId, kZLSearchTWActionTypeKey:[NSNumber numberWithInteger:ZLSearchTWActionTypeRemoveFileFromIndex]};
+    if (!searchDatabaseName.length) {
+        NSLog(@"You must provide a searchDatabase name in queueRemoveFile...");
+        return NO;
+    }
+
+    
+    NSDictionary *taskJsonData = @{kZLSearchTWModuleIdKey:moduleId, kZLSearchTWEntityIdKey:entityId, kZLSearchTWActionTypeKey:[NSNumber numberWithInteger:ZLSearchTWActionTypeRemoveFileFromIndex], kZLSearchTWDatabaseNameKey:searchDatabaseName};
     ZLTask *task = [[ZLTask alloc] initWithTaskType:kTaskTypeSearch jsonData:taskJsonData];
     task.requiresInternet = NO;
     task.majorPriority = kMajorPrioritySearch;
@@ -170,7 +216,7 @@ static dispatch_once_t onceToken;
 
 #pragma mark Reset
 
-- (BOOL)resetSearchDatabase
+- (BOOL)resetSearchDatabaseWithName:(NSString *)searchDatabaseName
 {
     [[ZLTaskManager sharedInstance] stopAndWaitWithNetworkCancellationBlock:^{
 
@@ -181,12 +227,14 @@ static dispatch_once_t onceToken;
     [ZLSearchManager setupFileDirectories];
     
     [[ZLTaskManager sharedInstance] resume];
-    return [ZLSearchDatabase resetDatabase];
+    ZLSearchDatabase *database = [self searchDatabaseForName:searchDatabaseName];
+    
+    return [database resetDatabase];
 }
 
 #pragma mark Search
 
-- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset completionBlock:(ZLSearchCompletionBlock)completionBlock
+- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset completionBlock:(ZLSearchCompletionBlock)completionBlock searchDatabaseName:(NSString *)searchDatabaseName
 {
     BOOL success = YES;
     if (limit < 1) {
@@ -197,9 +245,11 @@ static dispatch_once_t onceToken;
     searchText = [ZLSearchDatabase searchableStringFromString:searchText];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        ZLSearchDatabase *database = [self searchDatabaseForName:searchDatabaseName];
+        
         NSError *error;
         NSArray *searchSuggestions;
-        NSArray *results = [ZLSearchDatabase searchFilesWithSearchText:searchText limit:limit offset:offset searchSuggestions:&searchSuggestions error:&error];
+        NSArray *results = [database searchFilesWithSearchText:searchText limit:limit offset:offset searchSuggestions:&searchSuggestions error:&error];
         
         if (results.count) {
             [results makeObjectsPerformSelector:@selector(setFavoriteDelegate:) withObject:self.searchResultFavoriteDelegate];

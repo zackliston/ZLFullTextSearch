@@ -19,6 +19,7 @@ FOUNDATION_EXPORT NSString *const kZLSearchTWLanguageKey;
 FOUNDATION_EXPORT NSString *const kZLSearchTWBoostKey;
 FOUNDATION_EXPORT NSString *const kZLSearchTWSearchableStringsKey;
 FOUNDATION_EXPORT NSString *const kZLSearchTWFileMetadataKey;
+FOUNDATION_EXPORT NSString *const kZLSearchTWDatabaseNameKey;
 
 @interface ZLSearchTaskWorker : ZLTaskWorker
 

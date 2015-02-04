@@ -23,6 +23,7 @@
 @property (nonatomic, assign) ZLSearchTWActionType type;
 @property (nonatomic, strong) NSArray *urlArray;
 @property (nonatomic, strong) NSMutableArray *succeededIndexFileInfoDictionaries;
+@property (nonatomic, strong) ZLSearchDatabase *searchDatabase;
 
 - (NSDictionary *)preparedSearchStringsFromSearchableStrings:(NSDictionary *)rawSearchableStrings;
 - (BOOL)indexFileFromUrl:(NSString *)url;
@@ -98,7 +99,6 @@
     ZLSearchTWActionType actionType = ZLSearchTWActionTypeIndexFile;
     NSString *url1 = @"url1";
     NSString *url2 = @"url2";
-    NSString *absoluteUrl1 = @"absUrl1";
     NSArray *urlArray = @[url1, url2];
     
     ZLSearchTaskWorker *taskWorker = [ZLSearchTaskWorker new];
@@ -131,8 +131,11 @@
     
     ZLSearchTaskWorker *worker = [ZLSearchTaskWorker new];
     [worker setupWithWorkItem:workItem];
-
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    
+    ZLSearchDatabase *searchDatabase = [ZLSearchDatabase new];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:searchDatabase];
+    worker.searchDatabase = mockSearchDatabase;
+    
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(YES)] removeFileWithModuleId:moduleId entityId:entityId];
     
     id mockWorker = [OCMockObject partialMockForObject:worker];
@@ -158,7 +161,10 @@
     ZLSearchTaskWorker *worker = [ZLSearchTaskWorker new];
     [worker setupWithWorkItem:workItem];
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    ZLSearchDatabase *searchDatabase = [ZLSearchDatabase new];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:searchDatabase];
+    worker.searchDatabase = mockSearchDatabase;
+    
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(NO)] removeFileWithModuleId:moduleId entityId:entityId];
     
     id mockWorker = [OCMockObject partialMockForObject:worker];
@@ -203,7 +209,10 @@
     id mockSearchManager = [OCMockObject mockForClass:[ZLSearchManager class]];
     [[[mockSearchManager expect] andReturn:absoluteUrl] absoluteUrlForFileInfoFromRelativeUrl:relativeUrl];
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    ZLSearchDatabase *searchDatabase = [ZLSearchDatabase new];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:searchDatabase];
+    worker.searchDatabase = mockSearchDatabase;
+    
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(YES)] indexFileWithModuleId:moduleId entityId:fileId language:language boost:boost searchableStrings:preparedSearchableStrings fileMetadata:metadata];
     
     BOOL success = [worker indexFileFromUrl:relativeUrl];
@@ -283,7 +292,9 @@
     [[[mockSearchManager expect] andReturn:absoluteUrl] absoluteUrlForFileInfoFromRelativeUrl:relativeUrl];
 
     
-    id mockSearchDatabase = [OCMockObject mockForClass:[ZLSearchDatabase class]];
+    ZLSearchDatabase *searchDatabase = [ZLSearchDatabase new];
+    id mockSearchDatabase = [OCMockObject partialMockForObject:searchDatabase];
+    worker.searchDatabase = mockSearchDatabase;
     [[[mockSearchDatabase expect] andReturnValue:OCMOCK_VALUE(NO)] indexFileWithModuleId:moduleId entityId:fileId language:language boost:boost searchableStrings:preparedSearchableStrings fileMetadata:metadata];
     
     BOOL success = [worker indexFileFromUrl:relativeUrl];
