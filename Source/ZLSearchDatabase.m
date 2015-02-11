@@ -207,7 +207,7 @@
     NSMutableSet *formattedSnippetWords = [NSMutableSet new];
     for (NSString *word in [snippet componentsSeparatedByString:@" "]) {
         // Remove all unneccessary words
-        if ([word isEqualToString:@" "] || [[ZLSearchDatabase stopWords] containsObject:word] || !word.length) {
+        if ([word isEqualToString:@" "] || [[ZLSearchDatabase stopWords] containsObject:word] || word.length < 3) {
             continue;
         }
         
