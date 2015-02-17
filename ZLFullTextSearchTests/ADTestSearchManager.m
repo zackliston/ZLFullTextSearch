@@ -532,7 +532,6 @@
     [mockSearchManager verify];
 }
 
-
 #pragma mark - Test queueRemoveFile
 
 - (void)testQueueRemoveFileNoModuleId
@@ -909,6 +908,128 @@
     [mockSearchDatabase verify];
     [mockSearchDatabase stopMocking];
 }
+
+#pragma mark - Test local+remote search
+
+- (void)testSearchFilesAndRemoteSuccess
+{
+    NSString *searchText = @"seerii";
+    NSString *searchDatabaseName = @"searchDB";
+    NSUInteger offset = 0;
+    NSUInteger limit = 12;
+
+    ZLSearchCompletionBlock localCompletionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
+        
+    };
+    
+    ZLSearchCompletionBlock remoteCompletionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
+        
+    };
+    
+    ZLSearchManager *manager = [ZLSearchManager new];
+    id mockManager = [OCMockObject partialMockForObject:manager];
+    [[[mockManager expect] andReturnValue:OCMOCK_VALUE(YES)] searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:searchDatabaseName completionBlock:localCompletionBlock];
+    
+    id mockRemoteDelegate = [OCMockObject mockForProtocol:@protocol(ZLRemoteSearchProtocol)];
+    [[[mockRemoteDelegate expect] andReturnValue:OCMOCK_VALUE(YES)] remoteSearchWithSearchText:searchText limit:limit offset:offset completionBlock:remoteCompletionBlock];
+    
+    manager.remoteSearchDelegate = mockRemoteDelegate;
+    
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:searchDatabaseName completionBlock:localCompletionBlock remoteSearchCompletionBlock:remoteCompletionBlock];
+    XCTAssertTrue(success);
+    
+    [mockManager verify];
+    [mockRemoteDelegate verify];
+    [mockRemoteDelegate stopMocking];
+}
+
+- (void)testSearchFilesAndRemoteLocalFailure
+{
+    NSString *searchText = @"seerii";
+    NSString *searchDatabaseName = @"searchDB";
+    NSUInteger offset = 0;
+    NSUInteger limit = 12;
+    
+    ZLSearchCompletionBlock localCompletionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
+        
+    };
+    
+    ZLSearchCompletionBlock remoteCompletionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
+        
+    };
+    
+    ZLSearchManager *manager = [ZLSearchManager new];
+    id mockManager = [OCMockObject partialMockForObject:manager];
+    [[[mockManager expect] andReturnValue:OCMOCK_VALUE(NO)] searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:searchDatabaseName completionBlock:localCompletionBlock];
+    
+    id mockRemoteDelegate = [OCMockObject mockForProtocol:@protocol(ZLRemoteSearchProtocol)];
+    [[[mockRemoteDelegate expect] andReturnValue:OCMOCK_VALUE(YES)] remoteSearchWithSearchText:searchText limit:limit offset:offset completionBlock:remoteCompletionBlock];
+    
+    manager.remoteSearchDelegate = mockRemoteDelegate;
+    
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:searchDatabaseName completionBlock:localCompletionBlock remoteSearchCompletionBlock:remoteCompletionBlock];
+    XCTAssertFalse(success);
+    
+    
+    [mockManager verify];
+    [mockRemoteDelegate verify];
+    [mockRemoteDelegate stopMocking];
+}
+
+- (void)testSearchFilesAndRemoteRemoteFailure
+{
+    NSString *searchText = @"seerii";
+    NSString *searchDatabaseName = @"searchDB";
+    NSUInteger offset = 0;
+    NSUInteger limit = 12;
+    
+    ZLSearchCompletionBlock localCompletionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
+        
+    };
+    
+    ZLSearchCompletionBlock remoteCompletionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
+        
+    };
+    
+    ZLSearchManager *manager = [ZLSearchManager new];
+    id mockManager = [OCMockObject partialMockForObject:manager];
+    [[[mockManager expect] andReturnValue:OCMOCK_VALUE(YES)] searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:searchDatabaseName completionBlock:localCompletionBlock];
+    
+    id mockRemoteDelegate = [OCMockObject mockForProtocol:@protocol(ZLRemoteSearchProtocol)];
+    [[[mockRemoteDelegate expect] andReturnValue:OCMOCK_VALUE(NO)] remoteSearchWithSearchText:searchText limit:limit offset:offset completionBlock:remoteCompletionBlock];
+    
+    manager.remoteSearchDelegate = mockRemoteDelegate;
+    
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:searchDatabaseName completionBlock:localCompletionBlock remoteSearchCompletionBlock:remoteCompletionBlock];
+    XCTAssertFalse(success);
+    
+    [mockManager verify];
+    [mockRemoteDelegate verify];
+    [mockRemoteDelegate stopMocking];
+}
+
+- (void)testSearchFilesAndRemoteNoDelegate
+{
+    NSString *searchText = @"seerii";
+    NSString *searchDatabaseName = @"searchDB";
+    NSUInteger offset = 0;
+    NSUInteger limit = 12;
+    
+    ZLSearchCompletionBlock localCompletionBlock = ^void(NSArray *results, NSArray *searchSuggestions, NSError *error) {
+        
+    };
+    
+    ZLSearchManager *manager = [ZLSearchManager new];
+    id mockManager = [OCMockObject partialMockForObject:manager];
+    [[[mockManager expect] andReturnValue:OCMOCK_VALUE(YES)] searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:searchDatabaseName completionBlock:localCompletionBlock];
+    
+    manager.remoteSearchDelegate = nil;
+    BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:searchDatabaseName completionBlock:localCompletionBlock remoteSearchCompletionBlock:[OCMArg any]];
+    XCTAssertFalse(success);
+    
+    [mockManager verify];
+}
+
 
 #pragma mark - Test taskworker for workItem
 - (void)testTaskWorkerForWorkItem

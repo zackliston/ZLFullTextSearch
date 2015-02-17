@@ -274,6 +274,14 @@ static dispatch_once_t onceToken;
     return success;
 }
 
+- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchDatabaseName:(NSString *)searchDatabaseName completionBlock:(ZLSearchCompletionBlock)completionBlock remoteSearchCompletionBlock:(ZLSearchCompletionBlock)remoteSearchCompletionBlock
+{
+    BOOL localSuccess = [self searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:searchDatabaseName completionBlock:completionBlock];
+    BOOL remoteSuccess = [self.remoteSearchDelegate remoteSearchWithSearchText:searchText limit:limit offset:offset completionBlock:remoteSearchCompletionBlock];
+    
+    return (localSuccess && remoteSuccess);
+}
+
 #pragma mark - Helpers
 
 + (NSString *)relativeUrlForFileIndexInfoWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId

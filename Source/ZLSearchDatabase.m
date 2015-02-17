@@ -67,7 +67,6 @@
 
 - (BOOL)indexFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata
 {
-    
     __block BOOL success = YES;
     
     // Check to see if there's any searchable text the user provided according to our described keys in ADSearchDatabase.h

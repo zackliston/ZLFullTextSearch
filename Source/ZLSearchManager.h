@@ -19,6 +19,12 @@ typedef NS_ENUM(NSInteger, ZLSearchTWActionType) {
 
 typedef void (^ZLSearchCompletionBlock)(NSArray *searchResults, NSArray *searchSuggestions, NSError *error);
 
+@protocol ZLRemoteSearchProtocol <NSObject>
+
+- (BOOL)remoteSearchWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset completionBlock:(ZLSearchCompletionBlock)completionBlock;
+
+@end
+
 FOUNDATION_EXPORT NSString *const kTaskTypeSearch;
 FOUNDATION_EXPORT NSInteger const kMajorPrioritySearch;
 FOUNDATION_EXPORT NSInteger const kMinorPrioritySearchIndexFile;
@@ -43,6 +49,7 @@ FOUNDATION_EXPORT NSString *const kZLFileMetadataImageURI;
 @property (nonatomic, weak) id<ZLSearchResultIsFavoritedProtocol>searchResultFavoriteDelegate;
 @property (nonatomic, weak) id<ZLSearchBackupProtocol>backupSearchDelegate;
 @property (nonatomic, weak) id<ZLSearchTaskWorkerProtocol>searchTaskWorkerDelegate;
+@property (nonatomic, weak) id<ZLRemoteSearchProtocol>remoteSearchDelegate;
 
 + (ZLSearchManager *)sharedInstance;
 - (void)setupSearchDatabaseWithName:(NSString *)searchDatabaseName;
@@ -54,7 +61,9 @@ FOUNDATION_EXPORT NSString *const kZLFileMetadataImageURI;
 - (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata searchDatabaseName:(NSString *)searchDatabaseName;
 - (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId searchDatabaseName:(NSString *)searchDatabaseName;
 - (BOOL)resetSearchDatabaseWithName:(NSString *)searchDatabaseName;
+
 - (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchDatabaseName:(NSString *)searchDatabaseName completionBlock:(ZLSearchCompletionBlock)completionBlock;
+- (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchDatabaseName:(NSString *)searchDatabaseName completionBlock:(ZLSearchCompletionBlock)completionBlock remoteSearchCompletionBlock:(ZLSearchCompletionBlock)remoteSearchCompletionBlock;
 
 + (NSString *)absoluteUrlForFileInfoFromRelativeUrl:(NSString *)relativeUrl;
 
