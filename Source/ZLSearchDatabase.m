@@ -330,7 +330,7 @@
         
         // If there is a lemma for the word, then use that. If not, use the original word
         NSString *replacement;
-        if (tag) {
+        if (tag && token.length > 2) {
             replacement = tag;
         } else {
             replacement = token;
