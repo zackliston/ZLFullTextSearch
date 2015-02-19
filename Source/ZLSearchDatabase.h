@@ -20,7 +20,4 @@
 
 + (NSString *)searchableStringFromString:(NSString *)oldString;
 
-#warning Temporary, once the api is ready we won't need this anymore
-+ (NSString *)plainTextFromHTML:(NSString *)html;
-
 @end

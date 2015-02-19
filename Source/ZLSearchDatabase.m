@@ -307,7 +307,7 @@
     oldString = [NSString stringWithFormat:@"and %@", oldString];
     oldString = [oldString lowercaseString];
     
-    NSLinguisticTagger *tagger = [[NSLinguisticTagger alloc] initWithTagSchemes:@[NSLinguisticTagSchemeLemma] options:(NSLinguisticTaggerOmitPunctuation | NSLinguisticTaggerOmitOther)];
+    NSLinguisticTagger *tagger = [[NSLinguisticTagger alloc] initWithTagSchemes:@[NSLinguisticTagSchemeLemma] options:(NSLinguisticTaggerOmitOther)];
     tagger.string = oldString;
     
     [tagger enumerateTagsInRange:NSMakeRange(0, [oldString length]) scheme:NSLinguisticTagSchemeLemma options:(NSLinguisticTaggerOmitPunctuation | NSLinguisticTaggerOmitOther) usingBlock:^(NSString *tag, NSRange tokenRange, NSRange sentenceRange, BOOL *stop) {
@@ -322,12 +322,6 @@
             replacement = token;
         }
         
-        // If the word is not just an empty space, then remove everything but letter/numbers
-        // We want to keep empty spaces so that words stay separated.
-        if (![replacement isEqualToString:@" "]) {
-            replacement = [replacement stringByTrimmingCharactersInSet:[[NSCharacterSet alphanumericCharacterSet] invertedSet]];
-        }
-        
         // Remove all stop words
         if (![stopWords containsObject:replacement]) {
             newString = [newString stringByAppendingString:replacement];
@@ -336,22 +330,6 @@
     
     newString = [newString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     return newString;
-}
-
-+ (NSString *)plainTextFromHTML:(NSString *)html
-{
-    NSScanner *myScanner;
-    NSString *text = nil;
-    myScanner = [NSScanner scannerWithString:html];
-    
-    while ([myScanner isAtEnd] == NO) {
-        [myScanner scanUpToString:@"<" intoString:NULL] ;
-        [myScanner scanUpToString:@">" intoString:&text] ;
-        html = [html stringByReplacingOccurrencesOfString:[NSString stringWithFormat:@"%@>", text] withString:@""];
-    }
-    html = [html stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    
-    return html;
 }
 
 #pragma mark - Private Methods

@@ -179,13 +179,7 @@ NSString *const kZLSearchTWDatabaseNameKey = @"databaseName";
         NSString *oldString = [rawSearchableStrings objectForKey:key];
         NSString *newString = @"";
         
-#warning remove after beta when we have API response
-#ifdef TEST
-        newString = [ADSearchDatabase searchableStringFromString:oldString];
-#else
-        newString = [ZLSearchDatabase plainTextFromHTML:oldString];
-        newString = [ZLSearchDatabase searchableStringFromString:newString];
-#endif
+        newString = [ZLSearchDatabase searchableStringFromString:oldString];
         [newSearchableStrings setObject:newString forKey:key];
     }
     
