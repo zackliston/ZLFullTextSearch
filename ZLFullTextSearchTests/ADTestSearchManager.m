@@ -753,7 +753,7 @@
     
     ZLSearchDatabase *database = [ZLSearchDatabase new];                 
     id mockSearchDatabase = [OCMockObject partialMockForObject:database];
-    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg setTo:suggestions] error:[OCMArg anyObjectRef]];
+    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset preferPhraseSearching:YES searchSuggestions:[OCMArg setTo:suggestions] error:[OCMArg anyObjectRef]];
     
     id mockSearchManager = [OCMockObject partialMockForObject:manager];
     [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];
@@ -775,7 +775,7 @@
     
     id mockSearchDatabaseClass = [OCMockObject mockForClass:[ZLSearchDatabase class]];
     [[[mockSearchDatabaseClass expect] andReturn:formattedSearchText] searchableStringFromString:searchText];
-    
+   
     BOOL success = [manager searchFilesWithSearchText:searchText limit:limit offset:offset searchDatabaseName:dbName completionBlock:completionBlock];
     XCTAssertTrue(success);
     
@@ -805,7 +805,7 @@
     
     ZLSearchDatabase *database = [ZLSearchDatabase new];
     id mockSearchDatabase = [OCMockObject partialMockForObject:database];
-    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
+    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset preferPhraseSearching:YES searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
     
     id mockSearchManager = [OCMockObject partialMockForObject:manager];
     [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];
@@ -855,7 +855,7 @@
     
     ZLSearchDatabase *database = [ZLSearchDatabase new];
     id mockSearchDatabase = [OCMockObject partialMockForObject:database];
-    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg setTo:fakeError]];
+    [[[mockSearchDatabase expect] andReturn:expectedResults] searchFilesWithSearchText:formattedSearchText limit:limit offset:offset preferPhraseSearching:YES searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg setTo:fakeError]];
    
     id mockSearchManager = [OCMockObject partialMockForObject:manager];
     [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];
@@ -892,7 +892,7 @@
     
     ZLSearchDatabase *database = [ZLSearchDatabase new];
     id mockSearchDatabase = [OCMockObject partialMockForObject:database];
-    [[mockSearchDatabase reject] searchFilesWithSearchText:[OCMArg any] limit:limit offset:offset searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
+    [[mockSearchDatabase reject] searchFilesWithSearchText:[OCMArg any] limit:limit offset:offset preferPhraseSearching:YES searchSuggestions:[OCMArg anyObjectRef] error:[OCMArg anyObjectRef]];
     
     id mockSearchManager = [OCMockObject partialMockForObject:manager];
     [[[mockSearchManager stub] andReturn:mockSearchDatabase] searchDatabaseForName:dbName];

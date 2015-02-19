@@ -737,7 +737,7 @@
     [self.database indexFileWithModuleId:moduleId6 entityId:entityId6 language:language boost:boost searchableStrings:search6 fileMetadata:nil];
 
     NSError *error;
-    NSArray *results = [self.database searchFilesWithSearchText:@"hello" limit:10 offset:0 searchSuggestions:nil error:&error];
+    NSArray *results = [self.database searchFilesWithSearchText:@"hello" limit:10 offset:0 preferPhraseSearching:YES searchSuggestions:nil error:&error];
     
     XCTAssertNil(error);
     XCTAssertEqual(results.count, 5);
@@ -774,7 +774,7 @@
     [self.database indexFileWithModuleId:moduleId entityId:entityId2 language:language boost:boost searchableStrings:search2 fileMetadata:meta2];
     
     NSError *error;
-    NSArray *results = [self.database searchFilesWithSearchText:@"hello w" limit:10 offset:0 searchSuggestions:nil error:&error];
+    NSArray *results = [self.database searchFilesWithSearchText:@"hello w" limit:10 offset:0 preferPhraseSearching:YES searchSuggestions:nil error:&error];
     
     XCTAssertNil(error);
     XCTAssertEqual(results.count, 1);
@@ -819,7 +819,7 @@
     
     NSError *error;
     NSUInteger limit = 2;
-    NSArray *results = [self.database searchFilesWithSearchText:@"hello w" limit:limit offset:0 searchSuggestions:nil error:&error];
+    NSArray *results = [self.database searchFilesWithSearchText:@"hello w" limit:limit offset:0 preferPhraseSearching:YES searchSuggestions:nil error:&error];
     
     XCTAssertNil(error);
     XCTAssertEqual(results.count, limit);

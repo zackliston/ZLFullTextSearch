@@ -148,7 +148,7 @@
     return success;
 }
 
-- (NSArray *)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchSuggestions:(NSArray *__autoreleasing *)searchSuggestions error:(NSError *__autoreleasing *)error
+- (NSArray *)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset preferPhraseSearching:(BOOL)preferPhraseSearching searchSuggestions:(NSArray *__autoreleasing *)searchSuggestions error:(NSError *__autoreleasing *)error
 {
     __block NSMutableArray *formattedResults = [NSMutableArray new];
     __block NSMutableDictionary *snippetDictionary = [NSMutableDictionary new];
@@ -157,6 +157,10 @@
         [db open];
         
         NSString *formattedSearchText = [ZLSearchDatabase stringWithLastWordHavingPrefixOperatorFromString:searchText];
+        
+        if (preferPhraseSearching) {
+            formattedSearchText = [ZLSearchDatabase stringForPhraseSearchingFromString:formattedSearchText];
+        }
         
         NSString *matchString = [NSString stringWithFormat:@"%@", formattedSearchText];
         int searchWordCount = (int)[matchString componentsSeparatedByString:@" "].count+1;
@@ -195,6 +199,16 @@
             int number2 = [(NSNumber *)obj2 intValue];
             return number1 < number2;
         }];
+    }
+    
+    if (formattedResults.count < 1 && preferPhraseSearching) {
+        if (error) {
+            *error = nil;
+        }
+        if (searchSuggestions) {
+            *searchSuggestions = nil;
+        }
+        return [self searchFilesWithSearchText:searchText limit:limit offset:offset preferPhraseSearching:NO searchSuggestions:searchSuggestions error:error];
     }
     
     return [formattedResults copy];
@@ -516,6 +530,11 @@
     newString = [newString stringByAppendingString:@"*"];
     
     return newString;
+}
+
++ (NSString *)stringForPhraseSearchingFromString:(NSString *)oldString
+{
+    return [NSString stringWithFormat:@"\"%@\"", oldString];
 }
 
 - (BOOL)doesFileExistWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId

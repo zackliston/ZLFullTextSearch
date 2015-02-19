@@ -253,7 +253,7 @@ static dispatch_once_t onceToken;
         
         NSError *error;
         NSArray *searchSuggestions;
-        NSArray *results = [database searchFilesWithSearchText:searchText limit:limit offset:offset searchSuggestions:&searchSuggestions error:&error];
+        NSArray *results = [database searchFilesWithSearchText:searchText limit:limit offset:offset preferPhraseSearching:YES searchSuggestions:&searchSuggestions error:&error];
         
         if (results.count) {
             [results makeObjectsPerformSelector:@selector(setFavoriteDelegate:) withObject:self.searchResultFavoriteDelegate];
