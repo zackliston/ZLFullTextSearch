@@ -216,9 +216,9 @@
 
 - (NSMutableDictionary *)addSuggestionToDictionary:(NSMutableDictionary *)suggestionDictionary fromSnippet:(NSString *)snippet inReferenceToSearchText:(NSString *)searchText
 {
-    
     NSMutableSet *formattedSnippetWords = [NSMutableSet new];
-    for (NSString *word in [snippet componentsSeparatedByString:@" "]) {
+    for (NSString *rawWord in [snippet componentsSeparatedByString:@" "]) {
+        NSString *word = [rawWord stringByTrimmingCharactersInSet:[[NSCharacterSet alphanumericCharacterSet] invertedSet]];
         // Remove all unneccessary words
         if ([word isEqualToString:@" "] || [[ZLSearchDatabase stopWords] containsObject:word] || word.length < 3) {
             continue;
@@ -314,17 +314,17 @@
 
 + (NSString *)searchableStringFromString:(NSString *)oldString
 {
-    __block NSString *newString = @"";
+    __block NSMutableArray *newStringArray = [NSMutableArray new];
     __block NSSet *stopWords = [self stopWords];
     
     // This is a super temporary hack. The tagger doesn't stem the word if there is only one, so adding a word we know will be removed later makes sure that the words we're using are stemmed.
     oldString = [NSString stringWithFormat:@"and %@", oldString];
     oldString = [oldString lowercaseString];
     
-    NSLinguisticTagger *tagger = [[NSLinguisticTagger alloc] initWithTagSchemes:@[NSLinguisticTagSchemeLemma] options:(NSLinguisticTaggerOmitOther)];
+    NSLinguisticTagger *tagger = [[NSLinguisticTagger alloc] initWithTagSchemes:@[NSLinguisticTagSchemeLemma] options:(NSLinguisticTaggerOmitOther | NSLinguisticTaggerOmitWhitespace)];
     tagger.string = oldString;
     
-    [tagger enumerateTagsInRange:NSMakeRange(0, [oldString length]) scheme:NSLinguisticTagSchemeLemma options:(NSLinguisticTaggerOmitPunctuation | NSLinguisticTaggerOmitOther) usingBlock:^(NSString *tag, NSRange tokenRange, NSRange sentenceRange, BOOL *stop) {
+    [tagger enumerateTagsInRange:NSMakeRange(0, [oldString length]) scheme:NSLinguisticTagSchemeLemma options:(NSLinguisticTaggerOmitOther | NSLinguisticTaggerOmitWhitespace) usingBlock:^(NSString *tag, NSRange tokenRange, NSRange sentenceRange, BOOL *stop) {
         // The original word
         NSString *token = [oldString substringWithRange:tokenRange];
         
@@ -338,9 +338,11 @@
         
         // Remove all stop words
         if (![stopWords containsObject:replacement]) {
-            newString = [newString stringByAppendingString:replacement];
+            [newStringArray addObject:replacement];
         }
     }];
+    
+    NSString *newString = [newStringArray componentsJoinedByString:@" "];
     
     newString = [newString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     return newString;
