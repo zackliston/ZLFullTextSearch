@@ -12,7 +12,6 @@
 
 @interface ZLSearchResult ()
 
-@property (nonatomic, strong, readonly) NSString *imageUri;
 @property (nonatomic, strong, readonly) NSString *moduleId;
 
 @end
@@ -36,6 +35,17 @@
     }
     
     return self;
+}
+
+- (void)setupWithTitle:(NSString *)title subtitle:(NSString *)subtitle uri:(NSString *)uri type:(NSString *)type imageUri:(NSString *)imageUri fileId:(NSString *)fileId moduleId:(NSString *)moduleId
+{
+    _title = title;
+    _subtitle = subtitle;
+    _uri = uri;
+    _type = type;
+    _imageUri = imageUri;
+    _entityId = fileId;
+    _moduleId = moduleId;
 }
 
 #pragma mark - Getters/Setters
