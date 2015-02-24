@@ -246,6 +246,11 @@ static dispatch_once_t onceToken;
         return success;
     }
     
+    if (!completionBlock) {
+        NSLog(@"Cannot perform search in searchFilesWithSearchText unless a completion block is provided.");
+        return NO;
+    }
+    
     searchText = [ZLSearchDatabase searchableStringFromString:searchText];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
