@@ -14,6 +14,7 @@
 
 @property (nonatomic, strong, readonly) NSString *title;
 @property (nonatomic, strong, readonly) NSString *subtitle;
+@property (nonatomic, strong, readonly) NSString *parentTitle;
 @property (nonatomic, strong, readonly) NSString *uri;
 @property (nonatomic, strong, readonly) NSString *type;
 @property (nonatomic, strong, readonly) NSString *imageUri;
@@ -24,6 +25,6 @@
 @property (nonatomic, weak) id<ZLSearchResultIsFavoritedProtocol>favoriteDelegate;
 
 
-- (void)setupWithTitle:(NSString *)title subtitle:(NSString *)subtitle uri:(NSString *)uri type:(NSString *)type imageUri:(NSString *)imageUri fileId:(NSString *)fileId moduleId:(NSString *)moduleId;
+- (void)setupWithTitle:(NSString *)title subtitle:(NSString *)subtitle parentTitle:(NSString *)parentTitle uri:(NSString *)uri type:(NSString *)type imageUri:(NSString *)imageUri fileId:(NSString *)fileId moduleId:(NSString *)moduleId;
 @end
 

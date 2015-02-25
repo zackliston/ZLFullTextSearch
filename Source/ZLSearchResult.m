@@ -37,10 +37,11 @@
     return self;
 }
 
-- (void)setupWithTitle:(NSString *)title subtitle:(NSString *)subtitle uri:(NSString *)uri type:(NSString *)type imageUri:(NSString *)imageUri fileId:(NSString *)fileId moduleId:(NSString *)moduleId
+- (void)setupWithTitle:(NSString *)title subtitle:(NSString *)subtitle parentTitle:(NSString *)parentTitle uri:(NSString *)uri type:(NSString *)type imageUri:(NSString *)imageUri fileId:(NSString *)fileId moduleId:(NSString *)moduleId
 {
     _title = title;
     _subtitle = subtitle;
+    _parentTitle = parentTitle;
     _uri = uri;
     _type = type;
     _imageUri = imageUri;
