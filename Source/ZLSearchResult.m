@@ -12,8 +12,6 @@
 
 @interface ZLSearchResult ()
 
-@property (nonatomic, strong, readonly) NSString *moduleId;
-
 @end
 
 @implementation ZLSearchResult

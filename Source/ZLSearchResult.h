@@ -21,6 +21,7 @@
 @property (nonatomic, strong) UIImage *image;
 @property (nonatomic, assign, readonly) BOOL isFavorited;
 @property (nonatomic, strong, readonly) NSString *entityId;
+@property (nonatomic, strong, readonly) NSString *moduleId;
 
 @property (nonatomic, weak) id<ZLSearchResultIsFavoritedProtocol>favoriteDelegate;
 
