@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "ZLFullTextSearch"
-  s.version      = "0.1.0"
+  s.version      = "0.1.1"
   s.summary      = "An objective-c library for indexing, searching and ranking results."
 
   s.description  = <<-DESC
@@ -37,12 +37,12 @@ Pod::Spec.new do |s|
 
     s.platform     = :ios, "7.0"
 
-    s.source       = { :git => "https://github.com/zackliston/ZLFullTextSearch.git", :tag => "0.1.0" }
+    s.source       = { :git => "https://github.com/zackliston/ZLFullTextSearch.git", :tag => "0.1.1" }
 
     s.source_files  = "Source", "Source/.{h,m,c}"
     s.requires_arc = true
     s.dependencies = {
-        'ZLTaskManager' => '0.1',
+        'ZLTaskManager' => '0.1.1',
         'FMDB/FTS' => '2.4'
     }
 
