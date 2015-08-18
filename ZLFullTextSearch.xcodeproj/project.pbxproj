@@ -77,6 +77,7 @@
 		138DBB5E1A7B40930048906D /* ADTestSearchDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ADTestSearchDatabase.m; sourceTree = "<group>"; };
 		138DBB5F1A7B40930048906D /* ADTestSearchRank.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ADTestSearchRank.m; sourceTree = "<group>"; };
 		138DBB641A7B44EA0048906D /* ZLFullTextSearch.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ZLFullTextSearch.podspec; sourceTree = "<group>"; };
+		13E9B03F1B83A03A0027AC3A /* ZLSpotlightIdentifierProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ZLSpotlightIdentifierProtocol.h; path = Source/ZLSpotlightIdentifierProtocol.h; sourceTree = SOURCE_ROOT; };
 		257F36F8CFA81715F82496D3 /* Pods-ZLFullTextSearchTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLFullTextSearchTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ZLFullTextSearchTests/Pods-ZLFullTextSearchTests.debug.xcconfig"; sourceTree = "<group>"; };
 		77FA66BD6EF75AD0330A0CA8 /* Pods-ZLFullTextSearchTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLFullTextSearchTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ZLFullTextSearchTests/Pods-ZLFullTextSearchTests.release.xcconfig"; sourceTree = "<group>"; };
 		AB7B35DE195251D84F06A474 /* Pods-ZLFullTextSearch.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZLFullTextSearch.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ZLFullTextSearch/Pods-ZLFullTextSearch.debug.xcconfig"; sourceTree = "<group>"; };
@@ -245,6 +246,7 @@
 				138DBB591A7B390B0048906D /* ZLSearchResultIsFavoritedProtocol.h */,
 				138DBB5A1A7B3A8C0048906D /* ZLSearchBackupProtocol.h */,
 				138DBB5B1A7B3AC60048906D /* ZLSearchTaskWorkerProtocol.h */,
+				13E9B03F1B83A03A0027AC3A /* ZLSpotlightIdentifierProtocol.h */,
 			);
 			name = Protocols;
 			sourceTree = "<group>";

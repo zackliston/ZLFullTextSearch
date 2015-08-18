@@ -12,6 +12,7 @@
 #import "ZLTaskManager.h"
 #import "ZLInternalWorkItem.h"
 #import "ZLSearchResult.h"
+#import <CoreSpotlight/CoreSpotlight.h>
 
 NSString *const kZLSearchIndexInfoDirectoryName = @"ZLSearchIndexInfo";
 
@@ -157,7 +158,7 @@ static dispatch_once_t onceToken;
     return relativeUrl;
 }
 
-- (BOOL)queueIndexFileCollectionWithURLArray:(NSArray *)urlArray searchDatabaseName:(NSString *)searchDatabaseName
+- (BOOL)queueIndexFileCollectionWithURLArray:(NSArray *)urlArray searchDatabaseName:(NSString *)searchDatabaseName indexOnSpotlight:(BOOL)indexOnSpotlight
 {
     if (!urlArray.count) {
         NSLog(@"Error in queueIndexFileCollection in searchManager. Url array contained no urls.");
@@ -168,7 +169,7 @@ static dispatch_once_t onceToken;
         return NO;
     }
     
-    NSDictionary *jsonData = @{kZLSearchTWFileInfoUrlArrayKey:urlArray, kZLSearchTWActionTypeKey:[NSNumber numberWithInteger:ZLSearchTWActionTypeIndexFile], kZLSearchTWDatabaseNameKey:searchDatabaseName};
+    NSDictionary *jsonData = @{kZLSearchTWFileInfoUrlArrayKey:urlArray, kZLSearchTWActionTypeKey:[NSNumber numberWithInteger:ZLSearchTWActionTypeIndexFile], kZLSearchTWDatabaseNameKey:searchDatabaseName, kZLSearchTWIndexSpotlightKey:[NSNumber numberWithBool:indexOnSpotlight]};
     ZLTask *task = [[ZLTask alloc] initWithTaskType:kTaskTypeSearch jsonData:jsonData];
     task.majorPriority = kMajorPrioritySearch;
     task.minorPriority = kMinorPrioritySearchIndexFile;
@@ -179,7 +180,7 @@ static dispatch_once_t onceToken;
     return [[ZLTaskManager sharedInstance] queueTask:task];
 }
 
-- (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata searchDatabaseName:(NSString *)searchDatabaseName
+- (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata searchDatabaseName:(NSString *)searchDatabaseName indexOnSpotlight:(BOOL)indexOnSpotlight
 {
     NSError *saveError;
     NSString *fileLocation = [ZLSearchManager saveIndexFileInfoToFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetadata error:&saveError];
@@ -188,14 +189,14 @@ static dispatch_once_t onceToken;
         return NO;
     }
     
-    return [self queueIndexFileCollectionWithURLArray:@[fileLocation] searchDatabaseName:searchDatabaseName];
+    return [self queueIndexFileCollectionWithURLArray:@[fileLocation] searchDatabaseName:searchDatabaseName indexOnSpotlight:indexOnSpotlight];
 }
 
-- (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId searchDatabaseName:(NSString *)searchDatabaseName
+- (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId metadata:(NSDictionary *)metadata searchDatabaseName:(NSString *)searchDatabaseName
 {
     BOOL success = YES;
     
-    if (moduleId.length < 1 || entityId.length < 1) {
+    if (moduleId.length < 1 || entityId.length < 1 || metadata == nil) {
         success = NO;
         return success;
     }
@@ -204,9 +205,8 @@ static dispatch_once_t onceToken;
         NSLog(@"You must provide a searchDatabase name in queueRemoveFile...");
         return NO;
     }
-
     
-    NSDictionary *taskJsonData = @{kZLSearchTWModuleIdKey:moduleId, kZLSearchTWEntityIdKey:entityId, kZLSearchTWActionTypeKey:[NSNumber numberWithInteger:ZLSearchTWActionTypeRemoveFileFromIndex], kZLSearchTWDatabaseNameKey:searchDatabaseName};
+    NSDictionary *taskJsonData = @{kZLSearchTWModuleIdKey:moduleId, kZLSearchTWEntityIdKey:entityId, kZLSearchTWActionTypeKey:[NSNumber numberWithInteger:ZLSearchTWActionTypeRemoveFileFromIndex], kZLSearchTWDatabaseNameKey:searchDatabaseName, kZLSearchTWFileMetadataKey:metadata};
     ZLTask *task = [[ZLTask alloc] initWithTaskType:kTaskTypeSearch jsonData:taskJsonData];
     task.requiresInternet = NO;
     task.majorPriority = kMajorPrioritySearch;
@@ -222,6 +222,12 @@ static dispatch_once_t onceToken;
 
 - (BOOL)resetSearchDatabaseWithName:(NSString *)searchDatabaseName
 {
+    [[CSSearchableIndex defaultSearchableIndex] deleteSearchableItemsWithDomainIdentifiers:@[searchDatabaseName] completionHandler:^(NSError * _Nullable error) {
+        if (error) {
+            NSLog(@"Could not delete files from spotlight index for domain %@ Error: %@", searchDatabaseName, error);
+        }
+    }];
+    
     [[ZLTaskManager sharedInstance] stopAndWaitWithNetworkCancellationBlock:^{
 
     }];
@@ -329,7 +335,6 @@ static dispatch_once_t onceToken;
             }
         });
     }
-    
     return success;
 }
 
@@ -343,8 +348,8 @@ static dispatch_once_t onceToken;
     if ([workItem.taskType isEqualToString:kTaskTypeSearch]) {
         ZLSearchTaskWorker *searchWorker = [[ZLSearchTaskWorker alloc] init];
         searchWorker.delegate = self.searchTaskWorkerDelegate;
+        searchWorker.spotlightIdentiferDelegate = self.spotlightIdentiferDelegate;
         worker = searchWorker;
-        
     } else {
         NSLog(@"ADSearchManager asked to create an unsupported taskType %@", workItem.taskType);
         return nil;

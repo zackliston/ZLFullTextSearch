@@ -8,6 +8,7 @@
 
 #import "ZLTaskWorker.h"
 #import "ZLSearchTaskWorkerProtocol.h"
+#import "ZLSpotlightIdentifierProtocol.h"
 
 FOUNDATION_EXPORT NSString *const kZLSearchTWActionTypeKey;
 
@@ -20,9 +21,11 @@ FOUNDATION_EXPORT NSString *const kZLSearchTWBoostKey;
 FOUNDATION_EXPORT NSString *const kZLSearchTWSearchableStringsKey;
 FOUNDATION_EXPORT NSString *const kZLSearchTWFileMetadataKey;
 FOUNDATION_EXPORT NSString *const kZLSearchTWDatabaseNameKey;
+FOUNDATION_EXPORT NSString *const kZLSearchTWIndexSpotlightKey;
 
 @interface ZLSearchTaskWorker : ZLTaskWorker
 
 @property (nonatomic, weak) id<ZLSearchTaskWorkerProtocol>delegate;
+@property (nonatomic, weak) id<ZLSpotlightIdentiferProtocol> spotlightIdentiferDelegate;
 
 @end

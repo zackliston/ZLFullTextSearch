@@ -11,6 +11,7 @@
 #import "ZLSearchResultIsFavoritedProtocol.h"
 #import "ZLSearchBackupProtocol.h"
 #import "ZLSearchTaskWorkerProtocol.h"
+#import "ZLSpotlightIdentifierProtocol.h"
 
 typedef NS_ENUM(NSInteger, ZLSearchTWActionType) {
     ZLSearchTWActionTypeIndexFile,
@@ -24,6 +25,8 @@ typedef void (^ZLSearchCompletionBlock)(NSArray *searchResults, NSArray *searchS
 - (BOOL)remoteSearchWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset completionBlock:(ZLSearchCompletionBlock)completionBlock;
 
 @end
+
+
 
 FOUNDATION_EXPORT NSString *const kTaskTypeSearch;
 FOUNDATION_EXPORT NSInteger const kMajorPrioritySearch;
@@ -50,6 +53,7 @@ FOUNDATION_EXPORT NSString *const kZLFileMetadataImageURI;
 @property (nonatomic, weak) id<ZLSearchBackupProtocol>backupSearchDelegate;
 @property (nonatomic, weak) id<ZLSearchTaskWorkerProtocol>searchTaskWorkerDelegate;
 @property (nonatomic, weak) id<ZLRemoteSearchProtocol>remoteSearchDelegate;
+@property (nonatomic, weak) id<ZLSpotlightIdentiferProtocol> spotlightIdentiferDelegate;
 
 + (ZLSearchManager *)sharedInstance;
 - (void)setupSearchDatabaseWithName:(NSString *)searchDatabaseName;
@@ -57,9 +61,11 @@ FOUNDATION_EXPORT NSString *const kZLFileMetadataImageURI;
 
 + (NSString *)saveIndexFileInfoToFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata error:(NSError **)error;
 
-- (BOOL)queueIndexFileCollectionWithURLArray:(NSArray *)urlArray searchDatabaseName:(NSString *)searchDatabaseName;
-- (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata searchDatabaseName:(NSString *)searchDatabaseName;
-- (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId searchDatabaseName:(NSString *)searchDatabaseName;
+- (BOOL)queueIndexFileCollectionWithURLArray:(NSArray *)urlArray searchDatabaseName:(NSString *)searchDatabaseName indexOnSpotlight:(BOOL)indexOnSpotlight;
+- (BOOL)queueIndexFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata searchDatabaseName:(NSString *)searchDatabaseName indexOnSpotlight:(BOOL)indexOnSpotlight;
+
+- (BOOL)queueRemoveFileWithModuleId:(NSString *)moduleId entityId:(NSString *)entityId metadata:(NSDictionary *)metadata searchDatabaseName:(NSString *)searchDatabaseName;
+
 - (BOOL)resetSearchDatabaseWithName:(NSString *)searchDatabaseName;
 
 - (BOOL)searchFilesWithSearchText:(NSString *)searchText limit:(NSUInteger)limit offset:(NSUInteger)offset searchDatabaseName:(NSString *)searchDatabaseName completionBlock:(ZLSearchCompletionBlock)completionBlock;

@@ -8,7 +8,7 @@ PODS:
     - FMDB/common
   - OCMock (3.1.2)
   - Reachability (3.2)
-  - ZLTaskManager (0.1.0):
+  - ZLTaskManager (0.1.1):
     - FMDB (= 2.4)
     - Reachability (= 3.2)
 
@@ -18,9 +18,9 @@ DEPENDENCIES:
   - ZLTaskManager (~> 0.1)
 
 SPEC CHECKSUMS:
-  FMDB: 0b2fa25e5264ef177973c0cb8c02c711107979aa
-  OCMock: ecdd510b73ef397f2f97274785c1e87fd147c49f
-  Reachability: 1ef8adf5c4e3d362f96515d4278f68dad3c26930
-  ZLTaskManager: b71b4f2db64d50acfd4a5a5d01f7e47fb5897d1c
+  FMDB: d274d9ff773415735022ac57bfba9f6002f9fed8
+  OCMock: a10ea9f0a6e921651f96f78b6faee95ebc813b92
+  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
+  ZLTaskManager: be34cd6130c6104fab0f809d9381a75ed5361626
 
-COCOAPODS: 0.35.0
+COCOAPODS: 0.38.2

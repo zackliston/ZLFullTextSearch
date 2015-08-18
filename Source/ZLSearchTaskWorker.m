@@ -10,6 +10,10 @@
 #import "ZLSearchManager.h"
 #import "ZLInternalWorkItem.h"
 #import "ZLSearchDatabase.h"
+#import <CoreSpotlight/CoreSpotlight.h>
+#import <UIKit/UIKit.h>
+
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 
 NSString *const kZLSearchTWActionTypeKey = @"action";
 
@@ -22,6 +26,7 @@ NSString *const kZLSearchTWBoostKey = @"boost";
 NSString *const kZLSearchTWSearchableStringsKey = @"searchableStrings";
 NSString *const kZLSearchTWFileMetadataKey = @"fileMetadata";
 NSString *const kZLSearchTWDatabaseNameKey = @"databaseName";
+NSString *const kZLSearchTWIndexSpotlightKey = @"indexOnSpotlight";
 
 @interface ZLSearchTaskWorker ()
 
@@ -29,7 +34,9 @@ NSString *const kZLSearchTWDatabaseNameKey = @"databaseName";
 @property (nonatomic, strong) NSArray *urlArray;
 @property (nonatomic, strong) NSMutableArray *succeededIndexFileInfoDictionaries;
 @property (nonatomic, strong) ZLSearchDatabase *searchDatabase;
-
+@property (nonatomic, assign) BOOL shouldIndexOnSpotlight;
+@property (nonatomic, strong) NSMutableArray *spotlightItems;
+@property (nonatomic, strong) NSString *searchDatabaseName;
 @end
 
 @implementation ZLSearchTaskWorker
@@ -51,14 +58,18 @@ NSString *const kZLSearchTWDatabaseNameKey = @"databaseName";
     [super setupWithWorkItem:workItem];
     self.type = [[workItem.jsonData objectForKey:kZLSearchTWActionTypeKey] integerValue];
     self.urlArray = [workItem.jsonData objectForKey:kZLSearchTWFileInfoUrlArrayKey];
+    self.shouldIndexOnSpotlight = [[workItem.jsonData objectForKey:kZLSearchTWIndexSpotlightKey] boolValue];
+    self.searchDatabaseName = [workItem.jsonData objectForKey:kZLSearchTWDatabaseNameKey];
+    self.searchDatabase = [[ZLSearchManager sharedInstance] searchDatabaseForName:self.searchDatabaseName];
     
-    NSString *searchDatabaseName = [workItem.jsonData objectForKey:kZLSearchTWDatabaseNameKey];
-    self.searchDatabase = [[ZLSearchManager sharedInstance] searchDatabaseForName:searchDatabaseName];
+    if (self.shouldIndexOnSpotlight)  {
+        self.spotlightItems = [NSMutableArray new];
+    }
 }
 
 #pragma mark - Main
 
-- (void)main
+- (void)start
 {
     if (self.cancelled) {
         [self taskFinishedWasSuccessful:NO];
@@ -70,9 +81,15 @@ NSString *const kZLSearchTWDatabaseNameKey = @"databaseName";
     if (self.type == ZLSearchTWActionTypeRemoveFileFromIndex) {
         NSString *moduleId = [self.workItem.jsonData objectForKey:kZLSearchTWModuleIdKey];
         NSString *fileId = [self.workItem.jsonData objectForKey:kZLSearchTWEntityIdKey];
+        NSDictionary *metadata = [self.workItem.jsonData objectForKey:kZLSearchTWFileMetadataKey];
         
         success = [self.searchDatabase removeFileWithModuleId:moduleId entityId:fileId];
+        if (!success) {
+            [self taskFinishedWasSuccessful:success];
+            return;
+        }
         
+        [self asynchronouslyRemoveFileFromSpotlightIndexWithFileId:fileId moduleId:moduleId metadata:metadata];
     } else if (self.type == ZLSearchTWActionTypeIndexFile) {
         for (NSString *url in self.urlArray) {
             if (self.cancelled) {
@@ -85,9 +102,15 @@ NSString *const kZLSearchTWDatabaseNameKey = @"databaseName";
                 success = indexSuccess;
             }
         }
+        if (!success) {
+            [self taskFinishedWasSuccessful:success];
+            return;
+        }
+        
+        if (self.shouldIndexOnSpotlight) {
+            [self asynchronouslyIndexSpotlightItems:self.spotlightItems];
+        }
     }
-    
-    [self taskFinishedWasSuccessful:success];
 }
 
 - (BOOL)indexFileFromUrl:(NSString *)url
@@ -122,6 +145,11 @@ NSString *const kZLSearchTWDatabaseNameKey = @"databaseName";
             NSDictionary *fileInfo = @{kZLSearchTWModuleIdKey:moduleId, kZLSearchTWEntityIdKey:entityId, @"url":url};
             [self.succeededIndexFileInfoDictionaries addObject:fileInfo];
         }
+        
+        if (self.shouldIndexOnSpotlight) {
+            [self queueSpotlightItemWithFileId:entityId moduleId:moduleId searchableStrings:searchableStrings metadata:metadata];
+        }
+        
         return success;
     }
 }
@@ -164,6 +192,70 @@ NSString *const kZLSearchTWDatabaseNameKey = @"databaseName";
     self.workItem.jsonData = [mutableJsonData copy];
     
     [super taskFinishedWasSuccessful:wasSuccessful];
+}
+
+#pragma mark - Spotlight Helpers
+
+- (void)queueSpotlightItemWithFileId:(NSString *)fileId moduleId:(NSString *)moduleId searchableStrings:(NSDictionary *)searchableStrings metadata:(NSDictionary *)metadata {
+    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"9.0")) {
+        if (self.spotlightIdentiferDelegate) {
+            NSString *text = @"";
+            for (NSString *searchableString in searchableStrings.allValues) {
+                text = [text stringByAppendingFormat:@" %@", searchableString];
+            }
+            
+            NSString *identifier = [self.spotlightIdentiferDelegate identifierWithFileId:fileId moduleId:moduleId fileMetadata:metadata];
+            CSSearchableItemAttributeSet *attrSet = [[CSSearchableItemAttributeSet alloc] initWithItemContentType:@"data"];
+            attrSet.title = metadata[kZLFileMetadataTitle];
+            attrSet.thumbnailURL = [NSURL URLWithString:metadata[kZLFileMetadataImageURI]];
+            [attrSet setTextContent:text];
+            
+            CSSearchableItem *item = [[CSSearchableItem alloc] initWithUniqueIdentifier:identifier domainIdentifier:self.searchDatabaseName attributeSet:attrSet];
+            [self.spotlightItems addObject:item];
+        } else {
+            NSLog(@"We can only index on spotlight if a spotlightIdentiferDelegate has been specified on the SearchManager. Not indexing");
+        }
+    } else {
+        NSLog(@"We can only index on spotlight if it is iOS 9 or greater. Not indexing");
+    }
+
+}
+
+- (void)asynchronouslyIndexSpotlightItems:(NSArray *)spotlightItems {
+    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"9.0")) {
+        [[CSSearchableIndex defaultSearchableIndex] indexSearchableItems:spotlightItems completionHandler:^(NSError * _Nullable error) {
+            if (error) {
+                NSLog(@"Error indexing items on spotlight : %@", error);
+                [self taskFinishedWasSuccessful:NO];
+            } else {
+                [self taskFinishedWasSuccessful:YES];
+            }
+        }];
+    } else {
+        [self taskFinishedWasSuccessful:YES];
+    }
+}
+
+- (void)asynchronouslyRemoveFileFromSpotlightIndexWithFileId:(NSString *)fileId moduleId:(NSString *)moduleId metadata:(NSDictionary *)metadata {
+    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"9.0")) {
+        if (!self.spotlightIdentiferDelegate) {
+            NSLog(@"Could not remvoe file from spotlight index because the identifer delegate was not set");
+            [self taskFinishedWasSuccessful:YES];
+            return;
+        }
+        
+        NSString *identifier = [self.spotlightIdentiferDelegate identifierWithFileId:fileId moduleId:moduleId fileMetadata:metadata];
+        [[CSSearchableIndex defaultSearchableIndex] deleteSearchableItemsWithIdentifiers:@[identifier] completionHandler:^(NSError * _Nullable error) {
+            if (error) {
+                NSLog(@"Error removing file from spotlight index : %@", error);
+                [self taskFinishedWasSuccessful:NO];
+            } else {
+                [self taskFinishedWasSuccessful:YES];
+            }
+        }];
+    } else {
+        [self taskFinishedWasSuccessful:YES];
+    }
 }
 
 #pragma mark - Helpers
