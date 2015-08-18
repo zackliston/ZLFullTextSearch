@@ -228,6 +228,10 @@ NSString *const kZLSearchTWIndexSpotlightKey = @"indexOnSpotlight";
             [attrSet setTextContent:text];
             
             CSSearchableItem *item = [[CSSearchableItem alloc] initWithUniqueIdentifier:identifier domainIdentifier:self.searchDatabaseName attributeSet:attrSet];
+            NSDate *today = [NSDate date];
+            NSDate *expiration = [today dateByAddingTimeInterval:60*60*24*365*10];
+            item.expirationDate = expiration;
+            
             [self.spotlightItems addObject:item];
         } else {
             NSLog(@"We can only index on spotlight if a spotlightIdentiferDelegate has been specified on the SearchManager. Not indexing");
