@@ -41,6 +41,16 @@ NSString *const kZLSearchTWIndexSpotlightKey = @"indexOnSpotlight";
 
 @implementation ZLSearchTaskWorker
 
+#pragma mark - Initialization
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        self.isConcurrent = YES;
+    }
+    return self;
+}
+
 #pragma mark - Getters/Setters
 
 - (NSMutableArray *)succeededIndexFileInfoDictionaries
@@ -71,6 +81,8 @@ NSString *const kZLSearchTWIndexSpotlightKey = @"indexOnSpotlight";
 
 - (void)start
 {
+    self.isFinished = NO;
+    self.isExecuting = YES;
     if (self.cancelled) {
         [self taskFinishedWasSuccessful:NO];
         return;

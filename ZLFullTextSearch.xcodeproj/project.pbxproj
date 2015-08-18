@@ -13,6 +13,7 @@
 		13754B341A7B32D00072E213 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 13754B321A7B32D00072E213 /* Main.storyboard */; };
 		13754B361A7B32D00072E213 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13754B351A7B32D00072E213 /* Images.xcassets */; };
 		13754B391A7B32D00072E213 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13754B371A7B32D00072E213 /* LaunchScreen.xib */; };
+		137EEBE01B83D8AE00787626 /* CoreSpotlight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 137EEBDF1B83D8AE00787626 /* CoreSpotlight.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		138DBB3B1A7B37490048906D /* ZLSearchManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB3A1A7B37490048906D /* ZLSearchManager.m */; };
 		138DBB3C1A7B37490048906D /* ZLSearchManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB3A1A7B37490048906D /* ZLSearchManager.m */; };
 		138DBB411A7B377A0048906D /* ZLSearchTaskWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 138DBB401A7B377A0048906D /* ZLSearchTaskWorker.m */; };
@@ -57,6 +58,7 @@
 		13754B381A7B32D00072E213 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		13754B3E1A7B32D00072E213 /* ZLFullTextSearchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZLFullTextSearchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		13754B431A7B32D00072E213 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		137EEBDF1B83D8AE00787626 /* CoreSpotlight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreSpotlight.framework; path = System/Library/Frameworks/CoreSpotlight.framework; sourceTree = SDKROOT; };
 		138DBB391A7B37490048906D /* ZLSearchManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZLSearchManager.h; path = Source/ZLSearchManager.h; sourceTree = SOURCE_ROOT; };
 		138DBB3A1A7B37490048906D /* ZLSearchManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ZLSearchManager.m; path = Source/ZLSearchManager.m; sourceTree = SOURCE_ROOT; };
 		138DBB3F1A7B377A0048906D /* ZLSearchTaskWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ZLSearchTaskWorker.h; path = Source/ZLSearchTaskWorker.h; sourceTree = SOURCE_ROOT; };
@@ -91,6 +93,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				137EEBE01B83D8AE00787626 /* CoreSpotlight.framework in Frameworks */,
 				58DE1093455F3458D4AC5CD9 /* libPods-ZLFullTextSearch.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -254,6 +257,7 @@
 		2E3404F8C55B8D5E6E21BD64 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				137EEBDF1B83D8AE00787626 /* CoreSpotlight.framework */,
 				FA0C3A3E3E51892EF5486247 /* libPods-ZLFullTextSearch.a */,
 				AD9FDC07A21F23044AC7DF60 /* libPods-ZLFullTextSearchTests.a */,
 			);
