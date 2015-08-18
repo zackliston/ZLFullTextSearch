@@ -204,10 +204,13 @@ NSString *const kZLSearchTWIndexSpotlightKey = @"indexOnSpotlight";
                 text = [text stringByAppendingFormat:@" %@", searchableString];
             }
             
+            NSString *cachesDirectory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
+            NSString *imagePath = [NSString stringWithFormat:@"%@/%@", cachesDirectory, metadata[kZLFileMetadataImageURI]];
+            
             NSString *identifier = [self.spotlightIdentiferDelegate identifierWithFileId:fileId moduleId:moduleId fileMetadata:metadata];
             CSSearchableItemAttributeSet *attrSet = [[CSSearchableItemAttributeSet alloc] initWithItemContentType:@"data"];
             attrSet.title = metadata[kZLFileMetadataTitle];
-            attrSet.thumbnailURL = [NSURL URLWithString:metadata[kZLFileMetadataImageURI]];
+            attrSet.thumbnailURL = [NSURL URLWithString:imagePath];
             [attrSet setTextContent:text];
             
             CSSearchableItem *item = [[CSSearchableItem alloc] initWithUniqueIdentifier:identifier domainIdentifier:self.searchDatabaseName attributeSet:attrSet];
