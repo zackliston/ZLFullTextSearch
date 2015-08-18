@@ -369,7 +369,7 @@
         return YES;
     }]];
     
-    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray searchDatabaseName:dbName];
+    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray searchDatabaseName:dbName indexOnSpotlight:NO];
     XCTAssertTrue(success);
     
     [mockTaskManager verify];
@@ -394,7 +394,7 @@
     
     [[[mockTaskManager expect] andReturnValue:OCMOCK_VALUE(NO)] queueTask:[OCMArg any]];
     
-    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray searchDatabaseName:dbName];
+    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray searchDatabaseName:dbName indexOnSpotlight:NO];
     XCTAssertFalse(success);
     
     [mockTaskManager verify];
@@ -416,7 +416,7 @@
     
     [[mockTaskManager reject] queueTask:[OCMArg any]];
     
-    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray searchDatabaseName:dbName];
+    BOOL success = [searchManager queueIndexFileCollectionWithURLArray:urlArray searchDatabaseName:dbName indexOnSpotlight:NO];
     XCTAssertFalse(success);
     
     [mockTaskManager verify];
@@ -452,9 +452,9 @@
         XCTAssertTrue([expectedUrl isEqualToString:fileLocation]);
         
         return YES;
-    }] searchDatabaseName:dbName];
+    }] searchDatabaseName:dbName indexOnSpotlight:NO];
     
-    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData searchDatabaseName:dbName];
+    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData searchDatabaseName:dbName indexOnSpotlight:NO];
     
     XCTAssertTrue(success);
     
@@ -483,9 +483,9 @@
     NSError *fakeError = [NSError errorWithDomain:@"FakeError" code:-123 userInfo:nil];
     
     [[[mockSearchManagerClass expect] andReturn:fileLocation] saveIndexFileInfoToFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData error:[OCMArg setTo:fakeError]];
-    [[mockSearchManager reject] queueIndexFileCollectionWithURLArray:[OCMArg any] searchDatabaseName:dbName];
+    [[mockSearchManager reject] queueIndexFileCollectionWithURLArray:[OCMArg any] searchDatabaseName:dbName indexOnSpotlight:NO];
     
-    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData searchDatabaseName:dbName];
+    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData searchDatabaseName:dbName indexOnSpotlight:NO];
     
     XCTAssertFalse(success);
     
@@ -521,9 +521,9 @@
         XCTAssertTrue([expectedUrl isEqualToString:fileLocation]);
         
         return YES;
-    }] searchDatabaseName:dbName];
+    }] searchDatabaseName:dbName indexOnSpotlight:NO];
     
-    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData searchDatabaseName:dbName];
+    BOOL success = [searchManager queueIndexFileWithModuleId:moduleId fileId:fileId language:language boost:boost searchableStrings:searchableStrings fileMetadata:fileMetaData searchDatabaseName:dbName indexOnSpotlight:NO];
     
     XCTAssertFalse(success);
     
@@ -545,7 +545,7 @@
     [[[mockTaskManagerClass stub] andReturn:mockTaskManager] sharedInstance];
     [[mockTaskManager reject] queueTask:[OCMArg any]];
     
-    BOOL success = [manager queueRemoveFileWithModuleId:nil entityId:@"ent" searchDatabaseName:@"any"];
+    BOOL success = [manager queueRemoveFileWithModuleId:nil entityId:@"ent" metadata:nil searchDatabaseName:@"any"];
     
     XCTAssertFalse(success);
     
@@ -564,7 +564,7 @@
     [[[mockTaskManagerClass stub] andReturn:mockTaskManager] sharedInstance];
     [[mockTaskManager reject] queueTask:[OCMArg any]];
     
-    BOOL success = [manager queueRemoveFileWithModuleId:@"mdoul" entityId:nil searchDatabaseName:@"any"];
+    BOOL success = [manager queueRemoveFileWithModuleId:@"mdoul" entityId:nil metadata:nil searchDatabaseName:@"any"];
     
     XCTAssertFalse(success);
     
@@ -608,7 +608,7 @@
         return YES;
     }]];
     
-    BOOL success = [searchManager queueRemoveFileWithModuleId:moduleId entityId:entityId searchDatabaseName:dbName];
+    BOOL success = [searchManager queueRemoveFileWithModuleId:moduleId entityId:entityId metadata:@{} searchDatabaseName:dbName];
     
     XCTAssertTrue(success);
     [mockTaskManager verify];
@@ -630,7 +630,7 @@
     
     [[[mockTaskManager expect] andReturnValue:OCMOCK_VALUE(NO)] queueTask:[OCMArg any]];
     
-    BOOL success = [searchManager queueRemoveFileWithModuleId:moduleId entityId:entityId searchDatabaseName:@"any"];
+    BOOL success = [searchManager queueRemoveFileWithModuleId:moduleId entityId:entityId metadata:@{} searchDatabaseName:@"any"];
     
     XCTAssertFalse(success);
     [mockTaskManager verify];

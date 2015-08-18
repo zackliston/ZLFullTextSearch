@@ -109,6 +109,8 @@ NSString *const kZLSearchTWIndexSpotlightKey = @"indexOnSpotlight";
         
         if (self.shouldIndexOnSpotlight) {
             [self asynchronouslyIndexSpotlightItems:self.spotlightItems];
+        } else {
+            [self taskFinishedWasSuccessful:success];
         }
     }
 }

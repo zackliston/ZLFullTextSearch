@@ -88,8 +88,7 @@
     [[[mockWorker expect] andReturnValue:OCMOCK_VALUE(YES)] indexFileFromUrl:url2];
     [[mockWorker expect] taskFinishedWasSuccessful:YES];
     
-    
-    [taskWorker main];
+    [taskWorker start];
     
     [mockWorker verify];
 }
@@ -113,7 +112,7 @@
     [[mockWorker expect] taskFinishedWasSuccessful:NO];
     
     
-    [taskWorker main];
+    [taskWorker start];
     
     [mockWorker verify];
 }
@@ -141,7 +140,7 @@
     id mockWorker = [OCMockObject partialMockForObject:worker];
     [[mockWorker expect] taskFinishedWasSuccessful:YES];
     
-    [worker main];
+    [worker start];
     
     [mockWorker verify];
     [mockSearchDatabase verify];
@@ -170,7 +169,7 @@
     id mockWorker = [OCMockObject partialMockForObject:worker];
     [[mockWorker expect] taskFinishedWasSuccessful:NO];
     
-    [worker main];
+    [worker start];
     
     [mockWorker verify];
     [mockSearchDatabase verify];
