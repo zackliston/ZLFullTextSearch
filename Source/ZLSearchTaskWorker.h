@@ -27,5 +27,6 @@ FOUNDATION_EXPORT NSString *const kZLSearchTWIndexSpotlightKey;
 
 @property (nonatomic, weak) id<ZLSearchTaskWorkerProtocol>delegate;
 @property (nonatomic, weak) id<ZLSpotlightIdentiferProtocol> spotlightIdentiferDelegate;
+@property (nonatomic, assign) BOOL shouldStemWords;
 
 @end

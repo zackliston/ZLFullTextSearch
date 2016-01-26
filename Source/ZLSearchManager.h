@@ -58,6 +58,7 @@ FOUNDATION_EXPORT NSString *const kZLFileMetadataImageURI;
 + (ZLSearchManager *)sharedInstance;
 - (void)setupSearchDatabaseWithName:(NSString *)searchDatabaseName;
 - (ZLSearchDatabase *)searchDatabaseForName:(NSString *)searchDatabaseName;
+- (void)setShouldStemWords:(BOOL)shouldStemWords;
 
 + (NSString *)saveIndexFileInfoToFileWithModuleId:(NSString *)moduleId fileId:(NSString *)fileId language:(NSString *)language boost:(double)boost searchableStrings:(NSDictionary *)searchableStrings fileMetadata:(NSDictionary *)fileMetadata error:(NSError **)error;
 

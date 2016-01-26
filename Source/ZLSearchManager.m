@@ -36,6 +36,7 @@ NSString *const kZLFileMetadataImageURI = @"imageuri";
 @interface ZLSearchManager ()
 
 @property (nonatomic, strong) NSDictionary *searchDatabaseDictionary;
+@property (nonatomic, assign) BOOL shouldStemWords;
 
 @end
 
@@ -53,6 +54,7 @@ static dispatch_once_t onceToken;
 {
     dispatch_once(&onceToken, ^{
         _sharedInstance = [ZLSearchManager new];
+        _sharedInstance.shouldStemWords = YES;
         [self setupFileDirectories];
     });
     return _sharedInstance;
@@ -71,6 +73,11 @@ static dispatch_once_t onceToken;
         [self setupSearchDatabaseWithName:searchDatabaseName];
     }
     return [self.searchDatabaseDictionary objectForKey:searchDatabaseName];
+}
+
+- (void)setShouldStemWords:(BOOL)shouldStemWords
+{
+    self.shouldStemWords = shouldStemWords;
 }
 
 #pragma mark - Setup
@@ -257,7 +264,9 @@ static dispatch_once_t onceToken;
         return NO;
     }
     
-    searchText = [ZLSearchDatabase searchableStringFromString:searchText];
+    if (self.shouldStemWords) {
+        searchText = [ZLSearchDatabase searchableStringFromString:searchText];
+    }
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         ZLSearchDatabase *database = [self searchDatabaseForName:searchDatabaseName];

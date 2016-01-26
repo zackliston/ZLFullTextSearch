@@ -292,7 +292,12 @@ NSString *const kZLSearchTWIndexSpotlightKey = @"indexOnSpotlight";
         NSString *oldString = [rawSearchableStrings objectForKey:key];
         NSString *newString = @"";
         
-        newString = [ZLSearchDatabase searchableStringFromString:oldString];
+        if (self.shouldStemWords) {
+            newString = [ZLSearchDatabase searchableStringFromString:oldString];
+        } else {
+            newString = oldString;
+        }
+        
         [newSearchableStrings setObject:newString forKey:key];
     }
     
