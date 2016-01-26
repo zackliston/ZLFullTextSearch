@@ -77,7 +77,7 @@ static dispatch_once_t onceToken;
 
 - (void)setShouldStemWords:(BOOL)shouldStemWords
 {
-    self.shouldStemWords = shouldStemWords;
+    _shouldStemWords = shouldStemWords;
 }
 
 #pragma mark - Setup
